@@ -17,3 +17,4 @@ const USER_SEARCH_INDEX_NAME = 'user_search'
 const USER_AUTOCOMPLETE_INDEX_NAME = 'user_autocomplete'
 
 const app = express()
+
