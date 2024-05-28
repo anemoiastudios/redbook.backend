@@ -19,3 +19,5 @@ const USER_AUTOCOMPLETE_INDEX_NAME = 'user_autocomplete'
 const app = express()
 
 app.use(cors({credentials: true, origin: 'http://localhost:3001'}))
+
+
