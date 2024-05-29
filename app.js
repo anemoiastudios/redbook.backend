@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const profileController = require('./controllers/profileController');
 const channelController = require('./controllers/channelController');
+const { swaggerUi, specs } = require('./swagger');
 
 const app = express();
 const PORT = 3001;
@@ -15,6 +16,9 @@ mongoose.connect('mongodb://localhost:27017/anemoia')
     .catch(err => {
         console.error('Error connecting to MongoDB', err);
     });
+
+// Swagger UI setup
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // Profile routes
 app.get('/api/profile', profileController.getAllProfiles);
