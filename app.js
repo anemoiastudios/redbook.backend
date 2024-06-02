@@ -4,6 +4,11 @@ const profileController = require('./controllers/profileController');
 const channelController = require('./controllers/channelController');
 const { swaggerUi, specs } = require('./swagger');
 
+const bodyParser = require('body-parser');
+const messageRoutes = require('./routes/messageRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+
+
 const app = express();
 const PORT = 3001;
 
@@ -30,6 +35,11 @@ app.delete('/api/profile/:username', profileController.deleteProfileByUsername);
 // Channel routes
 app.get('/api/channels', channelController.getAllChannels);
 app.post('/api/channels', channelController.createChannel);
+
+// message and notification
+app.use(bodyParser.json());
+app.use('/messages', messageRoutes);
+app.use('/notifications', notificationRoutes);
 
 // Start the server
 app.listen(PORT, () => {
