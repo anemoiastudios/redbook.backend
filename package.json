@@ -1,20 +1,28 @@
 {
-  "name": "redbook.backend",
-  "version": "1.0.0",
-  "description": "Backend API of RedBook",
-  "main": "app.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
   "author": "",
-  "license": "ISC",
   "dependencies": {
     "express": "^4.19.2",
     "mongodb": "^6.6.2",
     "mongoose": "^8.4.0"
-  }
-}
+  },
+  "description": "Backend API of RedBook",
+  "keywords": [],
+  "license": "ISC",
+  "main": "app.js",
+  "name": "redbook.backend",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "1.0.0"
+},
+{
+"private": true,
+"prettier": {
+"singleQuote": true,
+"bracketSpacing": false,
+"semi": false,
+"printWidth": 110
+},
 
   "dependencies": {
     "@next/font": "13.1.5",
