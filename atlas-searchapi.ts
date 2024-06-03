@@ -29,7 +29,7 @@ app.get('/search', async (req, res) => {
         return
     }
 
-    const db = mongoClient.db('tutorial')
+    const db = mongoClient.db('redbook.backend')
     const collection = db.collection<User>(MONGODB_COLLECTION)
 
     const pipeline = []
@@ -237,6 +237,9 @@ async function main() {
     })
 }
 main()
+
+
+
 
 
 

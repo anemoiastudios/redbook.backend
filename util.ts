@@ -1,6 +1,6 @@
 import * as mongodb from 'mongodb'
 
-export const MONGODB_DATABASE = 'tutorial'
+export const MONGODB_DATABASE = 'redbook.backend'
 export const MONGODB_COLLECTION = 'users'
 
 const MONGODB_HOST = process.env.MONGODB_HOST!
