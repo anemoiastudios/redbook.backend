@@ -3,7 +3,9 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
+app.use(cors()); // allows any incomming request from any IP Address
 const PORT = 3000;
+
 
 // Endpoint to list files in a specific channel
 app.get('/files/:channel', (req, res) => {
