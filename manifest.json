@@ -10,7 +10,7 @@
         "slash_commands": [
             {
                 "command": "/horea",
-                "url": "mongodb://localhost:27017/anemoia/slack/events",
+                "url": "mongodb://localhost:3001/the_red_book/slack/events",
                 "description": "test",
                 "should_escape": false
             }
@@ -18,7 +18,7 @@
     },
     "oauth_config": {
         "redirect_urls": [
-            "mongodb://localhost:27017/anemoia/slack/oauth_redirect"
+            "mongodb://localhost:3001/the_red_book/slack/oauth_redirect"
         ],
         "scopes": {
             "bot": [
