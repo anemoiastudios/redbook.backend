@@ -46,7 +46,7 @@ getUserInfo().then(userInfo => {
       // Publish one-to-one message, assuming sending to user 'user2'
       client.publish(`message/private/user2/${userId}`, message);
 
-      // Publish group messages
+      // Publish group message
       client.publish('message/group/group1', message);
 
       rl.close();

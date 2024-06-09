@@ -2,13 +2,17 @@ const express = require('express');
 const mongoose = require('mongoose');
 const profileController = require('./controllers/profileController');
 const channelController = require('./controllers/channelController');
+const { swaggerUi, specs } = require('./swagger');
+const cors = require('cors')
 
 const app = express();
 const PORT = 3001;
 
-app.use(express.json());
+app.use(cors())
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
-mongoose.connect('mongodb://localhost:27017/anemoia')
+mongoose.connect('mongodb://127.0.0.1:27017/anemoia')
     .then(() => {
         console.log('Connected to MongoDB');
     })
@@ -16,10 +20,14 @@ mongoose.connect('mongodb://localhost:27017/anemoia')
         console.error('Error connecting to MongoDB', err);
     });
 
+// Swagger UI setup
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
 // Profile routes
 app.get('/api/profile', profileController.getAllProfiles);
 app.get('/api/profile/:username', profileController.getProfileByUsername);
-app.post('/api/profile', profileController.createProfile);
+app.post('/api/createprofile', profileController.createProfile);
+app.post('/api/loginprofile',profileController.loginprofile)
 app.put('/api/profile/:username', profileController.updateProfileByUsername);
 app.delete('/api/profile/:username', profileController.deleteProfileByUsername);
 
