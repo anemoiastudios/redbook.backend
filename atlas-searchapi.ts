@@ -1,6 +1,8 @@
 import express from 'express'
-import {request} from 'urllib'
+// @ts-ignore
+import {request} from "urllib"
 import cors from 'cors'
+server.use(cors<Request>());
 import {mongoClient, MONGODB_COLLECTION, MONGODB_DATABASE, User} from './util'
 
 const ATLAS_API_BASE_URL = 'https://cloud.mongodb.com/api/atlas/v1.0'
@@ -18,7 +20,7 @@ const USER_AUTOCOMPLETE_INDEX_NAME = 'user_autocomplete'
 
 const app = express()
 
-app.use(cors({credentials: true, origin: 'http://localhost:3001'}))
+app.use(cors({credentials: true, origin: 'http://localhost:4000'}))
 
 app.get('/search', async (req, res) => {
     const searchQuery = req.query.query as string

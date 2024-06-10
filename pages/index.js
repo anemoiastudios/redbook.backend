@@ -1,16 +1,17 @@
 import Head from "next/head";
 import { useState, useEffect } from "react";
 import * as Realm from "realm-web";
-import Category from "../../../Desktop/jumpstart-series-atlas-search/jumpstart-series-atlas-search/components/Category";
-import Container from "../../../Desktop/jumpstart-series-atlas-search/jumpstart-series-atlas-search/components/Container";
-import Footer from "../../../Desktop/jumpstart-series-atlas-search/jumpstart-series-atlas-search/components/Footer";
-import Header from "../../../Desktop/jumpstart-series-atlas-search/jumpstart-series-atlas-search/components/Header";
-import Hero from "../../../Desktop/jumpstart-series-atlas-search/jumpstart-series-atlas-search/components/Hero";
-import Pagination from "../../../Desktop/jumpstart-series-atlas-search/jumpstart-series-atlas-search/components/Pagination";
-import Products from "../../../Desktop/jumpstart-series-atlas-search/jumpstart-series-atlas-search/components/Products";
+import Category from "/components/Category";
+import Container from "/components/Container";
+import Footer from "/components/Footer";
+import Header from "/components/Header";
+import Hero from "/components/Hero";
+import Pagination from "components/Pagination";
+import Username from "/components/username";
+
 
 export default function Home() {
-  const [products, setProducts] = useState([]);
+  const [username, setUsername] = useState([]);
 
   useEffect(async () => {
     const REALM_APP_ID = process.env.NEXT_PUBLIC_REALM_APP_ID;
@@ -18,8 +19,8 @@ export default function Home() {
     const credentials = Realm.Credentials.anonymous();
     try {
       const user = await app.logIn(credentials);
-      const allProducts = await user.functions.getAllProducts();
-      setProducts(() => allProducts);
+      const allUsername = await user.functions.getAllProducts();
+      setUsernames(() => allUsernames);
     } catch (error) {
       console.error(error);
     }
@@ -37,9 +38,9 @@ export default function Home() {
           <Hero />
           <Category
             category="Tech Wear"
-            categoryCount={`${products.length} Products`}
+            categoryCount={`${usernames.length} usernames`}
           />
-          <Products products={products} />
+          <Username usernames={usernames} />
           <Pagination />
         </Container>
         <Footer />
