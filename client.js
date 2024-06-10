@@ -7,7 +7,7 @@ const rl = readline.createInterface({
 });
 
 const userId = process.argv[2];
-const client = mqtt.connect('mqtt://localhost:1883');
+const client = mqtt.connect('mqtt://localhost:4000');
 
 client.on('connect', () => {
   console.log('Connected to MQTT server');

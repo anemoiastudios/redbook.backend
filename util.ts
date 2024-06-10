@@ -1,6 +1,6 @@
 import * as mongodb from 'mongodb'
 
-export const MONGODB_DATABASE = 'redbook.backend'
+export const MONGODB_DATABASE = 'Project 0'
 export const MONGODB_COLLECTION = 'users'
 
 const MONGODB_HOST = process.env.MONGODB_HOST!
@@ -15,7 +15,6 @@ export interface User {
     userId: string
     fullName: string
     email: string
-    avatar: string
     registeredAt: Date
     country: string
 }
