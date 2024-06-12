@@ -1,4 +1,8 @@
 const Profile = require('../models/profile');
+const jwt = require('jsonwebtoken')
+const md5 = require('md5')
+
+const JWT_SECRET = 'your_jwt_secret';
 
 /**
  * @swagger
@@ -116,16 +120,56 @@ exports.getProfileByUsername = async (req, res) => {
  *       500:
  *         description: Server error
  */
+
+
 exports.createProfile = async (req, res) => {
+    const { username, password, firstName, lastName, birthday, email } = req.body;
+    console.log('=>', username, password, firstName, lastName, birthday, email)
     try {
-        const { username, email, bio } = req.body;
-        const newProfile = new Profile({ username, email, bio });
+        const existingProfile = await Profile.findOne({ username });
+        if (existingProfile) {
+            return res.status(400).json({ message: 'The user name already exists' });
+        }
+        const newProfile = new Profile({
+            username,
+            password: md5(password), 
+            firstName,
+            lastName,
+            birthday: new Date(birthday), 
+            email
+        });
         await newProfile.save();
-        res.json({ message: 'Profile created successfully', newProfile });
+        res.status(201).json({ message: 'User registration succeeded', newProfile });
     } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err.message });
+        res.status(500).json({ message: 'server error', error: err.message });
     }
 };
+
+exports.loginprofile = async (req, res) => {
+    const { username, password } = req.body;
+    console.log(username, password)
+    try {
+        const profile = await Profile.findOne({ username });
+        console.log(profile)
+        if (!profile) {
+            return res.status(404).json({ message: 'The user does not exist' });
+        }
+        const hashedPassword = md5(password); 
+        console.log(hashedPassword)
+        if (hashedPassword !== profile.password) {
+            console.log('Check failure')
+            return res.status(401).json({ message: 'password error' });
+        }
+
+        const token = jwt.sign({ username: profile.username }, JWT_SECRET, { expiresIn: '1h' });
+
+        res.status(200).json({ message: 'login successfully', token });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'server error', error: err.message });
+    }
+}
+
 
 /**
  * @swagger
@@ -188,6 +232,8 @@ exports.updateProfileByUsername = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
+
+
 
 /**
  * @swagger
