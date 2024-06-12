@@ -1,8 +1,6 @@
 import express from 'express'
-// @ts-ignore
-import {request} from "urllib"
+import {request} from 'urllib'
 import cors from 'cors'
-server.use(cors<Request>());
 import {mongoClient, MONGODB_COLLECTION, MONGODB_DATABASE, User} from './util'
 
 const ATLAS_API_BASE_URL = 'https://cloud.mongodb.com/api/atlas/v1.0'
@@ -31,7 +29,7 @@ app.get('/search', async (req, res) => {
         return
     }
 
-    const db = mongoClient.db('redbook.backend')
+    const db = mongoClient.db('tutorial')
     const collection = db.collection<User>(MONGODB_COLLECTION)
 
     const pipeline = []
@@ -39,13 +37,13 @@ app.get('/search', async (req, res) => {
     if (country) {
         pipeline.push({
             $search: {
-                index: USER_SEARCH_INDEX_NAME,
+                index: "default",
                 compound: {
                     must: [
                         {
                             text: {
-                                query: searchQuery,
-                                path: ['fullName', 'email'],
+                                query: "{\"username\":{$eq: \"example_username\"}}",
+                                path: ['username', 'password'],
                                 fuzzy: {},
                             },
                         },
@@ -238,11 +236,5 @@ async function main() {
         process.exit(0)
     })
 }
+
 main()
-
-
-
-
-
-
-
