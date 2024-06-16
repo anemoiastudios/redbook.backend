@@ -13,6 +13,9 @@ const ATLAS_API_PUBLIC_KEY = process.env.MONGODB_ATLAS_PUBLIC_KEY
 const ATLAS_API_PRIVATE_KEY = process.env.MONGODB_ATLAS_PRIVATE_KEY
 const DIGEST_AUTH = `${ATLAS_API_PUBLIC_KEY}:${ATLAS_API_PRIVATE_KEY}`
 
+
+//index names
+
 const USER_SEARCH_INDEX_NAME = 'user_search'
 const USER_AUTOCOMPLETE_INDEX_NAME = 'user_autocomplete'
 
@@ -28,7 +31,7 @@ app.get('/search', async (req, res) => {
         res.json([])
         return
     }
-
+//dnbame tutorial is used as the script with fake data for demo and testing reasons has a database called tutorial with the data under 'users'
     const db = mongoClient.db('tutorial')
     const collection = db.collection<User>(MONGODB_COLLECTION)
 
@@ -40,7 +43,7 @@ app.get('/search', async (req, res) => {
                 index: "default",
                 compound: {
                     must: [
-                        {
+                        { //query is using the current query in our atlas to pull up specific information, fuzzy is used as a suggestion to pull it up.
                             text: {
                                 query: "{\"username\":{$eq: \"example_username\"}}",
                                 path: ['username', 'password'],
