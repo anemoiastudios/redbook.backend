@@ -1,0 +1,13 @@
+# MongoDB Atlas API
+### search for gilbert
+GET http://localhost:3001/search?query=gilbert
+### gilbert or kutch
+GET http://localhost:3001/search?query=gilbert%20murphy
+### fuzzy search works on atlas
+GET http://localhost:3001/search?query=gilber%20murph
+### gilbart and country=RO
+GET http://localhost:3001/search?query=gilbert&country=RO
+### autocomplete
+GET http://localhost:3001/autocomplete?query=gil
+
+//testing for demo purposes
