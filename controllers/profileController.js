@@ -140,8 +140,6 @@ exports.getProfileByUsername = async (req, res) => {
  *       500:
  *         description: Server error
  */
-
-
 exports.createProfile = async (req, res) => {
     const { username, password, firstName, lastName, birthday, email } = req.body;
     console.log('=>', username, password, firstName, lastName, birthday, email)
@@ -164,32 +162,6 @@ exports.createProfile = async (req, res) => {
         res.status(500).json({ message: 'server error', error: err.message });
     }
 };
-
-exports.loginprofile = async (req, res) => {
-    const { username, password } = req.body;
-    console.log(username, password)
-    try {
-        const profile = await Profile.findOne({ username });
-        console.log(profile)
-        if (!profile) {
-            return res.status(404).json({ message: 'The user does not exist' });
-        }
-        const hashedPassword = md5(password); 
-        console.log(hashedPassword)
-        if (hashedPassword !== profile.password) {
-            console.log('Check failure')
-            return res.status(401).json({ message: 'password error' });
-        }
-
-        const token = jwt.sign({ username: profile.username }, JWT_SECRET, { expiresIn: '1h' });
-
-        res.status(200).json({ message: 'login successfully', token });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'server error', error: err.message });
-    }
-}
-
 
 /**
  * @swagger
