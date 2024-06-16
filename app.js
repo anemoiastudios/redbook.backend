@@ -3,13 +3,16 @@ const mongoose = require('mongoose');
 const profileController = require('./controllers/profileController');
 const channelController = require('./controllers/channelController');
 const { swaggerUi, specs } = require('./swagger');
+const cors = require('cors')
 
 const app = express();
 const PORT = 3001;
 
-app.use(express.json());
+app.use(cors())
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
-mongoose.connect('mongodb://localhost:27017/anemoia')
+mongoose.connect('mongodb://127.0.0.1:27017/anemoia')
     .then(() => {
         console.log('Connected to MongoDB');
     })

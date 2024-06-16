@@ -7,8 +7,7 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const SLACK_API_URL = 'https://slack.com/api/users.identity';
-const SLACK_ACCESS_TOKEN = 'your slack access-token'; // Replace with your Slack access token
+
 
 // Function to fetch user information
 async function getUserInfo() {
