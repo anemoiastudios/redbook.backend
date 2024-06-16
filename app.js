@@ -23,7 +23,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 // Profile routes
 app.get('/api/profile', profileController.getAllProfiles);
 app.get('/api/profile/:username', profileController.getProfileByUsername);
-app.post('/api/profile', profileController.createProfile);
+app.post('/api/createprofile', profileController.createProfile);
+app.post('/api/loginprofile',profileController.loginprofile)
 app.put('/api/profile/:username', profileController.updateProfileByUsername);
 app.delete('/api/profile/:username', profileController.deleteProfileByUsername);
 
