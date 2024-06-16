@@ -25,6 +25,26 @@ const JWT_SECRET = 'your_jwt_secret';
  *         username: johndoe
  *         email: johndoe@example.com
  *         bio: Software developer from San Francisco
+ *     LoginRequest:
+ *       type: object
+ *       required:
+ *         - username
+ *         - password
+ *       properties:
+ *         username:
+ *           type: string
+ *         password:
+ *           type: string
+ *       example:
+ *         username: johndoe
+ *         password: mypassword
+ *     LoginResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *         token:
+ *           type: string
  */
 
 /**
@@ -170,6 +190,57 @@ exports.loginprofile = async (req, res) => {
     }
 }
 
+
+/**
+ * @swagger
+ * /api/profile/login:
+ *   post:
+ *     summary: Login to a profile
+ *     tags: [Profiles]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LoginResponse'
+ *       401:
+ *         description: Invalid credentials
+ *       404:
+ *         description: Profile not found
+ *       500:
+ *         description: Server error
+ */
+exports.loginprofile = async (req, res) => {
+    const { username, password } = req.body;
+    console.log(username, password)
+    try {
+        const profile = await Profile.findOne({ username });
+        console.log(profile)
+        if (!profile) {
+            return res.status(404).json({ message: 'The user does not exist' });
+        }
+        const hashedPassword = md5(password); 
+        console.log(hashedPassword)
+        if (hashedPassword !== profile.password) {
+            console.log('Check failure')
+            return res.status(401).json({ message: 'password error' });
+        }
+
+        const token = jwt.sign({ username: profile.username }, JWT_SECRET, { expiresIn: '1h' });
+
+        res.status(200).json({ message: 'login successfully', token });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'server error', error: err.message });
+    }
+}
 
 /**
  * @swagger
