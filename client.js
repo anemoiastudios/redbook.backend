@@ -1,8 +1,12 @@
 const mqtt = require('mqtt');
 const readline = require('readline');
 const axios = require('axios'); // Add axios for HTTP requests
-
+const userId = process.argv[2];
+const client = mqtt.connect('mqtt://localhost:4000');
+const SLACK_API_URL = 'https://slack.com/api/users.identity';
+const SLACK_ACCESS_TOKEN = 'your slack access-token'; // Replace with your Slack access token
 const rl = readline.createInterface({
+  
   input: process.stdin,
   output: process.stdout,
 });
