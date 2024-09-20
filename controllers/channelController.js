@@ -24,7 +24,7 @@ const Channel = require('../models/channel');
 
 /**
  * @swagger
- * /api/channels:
+ * /channel/get/all:
  *   get:
  *     summary: Get all channels
  *     tags: [Channels]
@@ -51,7 +51,7 @@ exports.getAllChannels = async (req, res) => {
 
 /**
  * @swagger
- * /api/channels:
+ * /channel/create:
  *   post:
  *     summary: Create a new channel
  *     tags: [Channels]

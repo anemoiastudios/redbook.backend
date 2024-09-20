@@ -1,12 +1,17 @@
-# redbook.backend
-Backend API of RedBook
+# Redbook Backend
+Backend API of The Red Book
 
-currently being implemented by RMIT Group
+## Setup and run server
+Install dependencies
+```
+npm install
+```
 
-i am committing on a feature branch
+Start server
+```
+npm run start
+```
 
-to run the docs just:
-cd redbook.backend
-npm install express
-run node app.js at terminal
-go to web browser and search for http://localhost:3001/api-docs/
+Enter the URL to access Swagger UI
+
+[http://localhost:3000/docs](http://localhost:3000/docs)

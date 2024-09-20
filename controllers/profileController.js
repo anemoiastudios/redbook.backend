@@ -56,7 +56,7 @@ const JWT_SECRET = 'your_jwt_secret';
 
 /**
  * @swagger
- * /api/profile:
+ * /user/get/all:
  *   get:
  *     summary: Get all profiles
  *     tags: [Profiles]
@@ -83,7 +83,7 @@ exports.getAllProfiles = async (req, res) => {
 
 /**
  * @swagger
- * /api/profile/{username}:
+ * /user/get/{username}:
  *   get:
  *     summary: Get profile by username
  *     tags: [Profiles]
@@ -120,7 +120,7 @@ exports.getProfileByUsername = async (req, res) => {
 
 /**
  * @swagger
- * /api/profile:
+ * /user/create:
  *   post:
  *     summary: Create a new profile
  *     tags: [Profiles]
@@ -152,10 +152,10 @@ exports.createProfile = async (req, res) => {
         }
         const newProfile = new Profile({
             username,
-            password: md5(password), 
+            password: md5(password),
             firstName,
             lastName,
-            birthday: new Date(birthday), 
+            birthday: new Date(birthday),
             email
         });
         await newProfile.save();
@@ -174,7 +174,7 @@ exports.loginprofile = async (req, res) => {
         if (!profile) {
             return res.status(404).json({ message: 'The user does not exist' });
         }
-        const hashedPassword = md5(password); 
+        const hashedPassword = md5(password);
         console.log(hashedPassword)
         if (hashedPassword !== profile.password) {
             console.log('Check failure')
@@ -193,7 +193,7 @@ exports.loginprofile = async (req, res) => {
 
 /**
  * @swagger
- * /api/profile/login:
+ * /user/login:
  *   post:
  *     summary: Login to a profile
  *     tags: [Profiles]
@@ -226,7 +226,7 @@ exports.loginprofile = async (req, res) => {
         if (!profile) {
             return res.status(404).json({ message: 'The user does not exist' });
         }
-        const hashedPassword = md5(password); 
+        const hashedPassword = md5(password);
         console.log(hashedPassword)
         if (hashedPassword !== profile.password) {
             console.log('Check failure')
@@ -244,7 +244,7 @@ exports.loginprofile = async (req, res) => {
 
 /**
  * @swagger
- * /api/profile/{username}:
+ * /user/update/{username}:
  *   put:
  *     summary: Update a profile by username
  *     tags: [Profiles]
@@ -308,7 +308,7 @@ exports.updateProfileByUsername = async (req, res) => {
 
 /**
  * @swagger
- * /api/profile/{username}:
+ * /user/delete/{username}:
  *   delete:
  *     summary: Delete a profile by username
  *     tags: [Profiles]
