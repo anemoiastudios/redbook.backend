@@ -24,19 +24,19 @@ app.use(express.urlencoded({ extended: true }))
 
 
 // Swagger UI setup
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // Profile routes
-app.get('/api/profile', profileController.getAllProfiles);
-app.get('/api/profile/:username', profileController.getProfileByUsername);
-app.post('/api/createprofile', profileController.createProfile);
-app.post('/api/loginprofile', profileController.loginprofile)
-app.put('/api/profile/:username', profileController.updateProfileByUsername);
-app.delete('/api/profile/:username', profileController.deleteProfileByUsername);
+app.get('/user/get/all', profileController.getAllProfiles);
+app.get('/user/get/:username', profileController.getProfileByUsername);
+app.post('/user/create', profileController.createProfile);
+app.post('/user/login', profileController.loginprofile)
+app.put('/user/update/:username', profileController.updateProfileByUsername);
+app.delete('/user/delete/:username', profileController.deleteProfileByUsername);
 
 // Channel routes
-app.get('/api/channels', channelController.getAllChannels);
-app.post('/api/channels', channelController.createChannel);
+app.get('/channel/all', channelController.getAllChannels);
+app.post('/channel/create', channelController.createChannel);
 
 // Start the server
 app.listen(PORT, () => {
