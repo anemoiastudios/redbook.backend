@@ -14,17 +14,14 @@ const JWT_SECRET = 'your_jwt_secret';
  *         - username
  *         - email
  *         - bio
- *       properties:
- *         username:
- *           type: string
- *         email:
- *           type: string
- *         bio:
- *           type: string
  *       example:
- *         username: johndoe
  *         email: johndoe@example.com
- *         bio: Software developer from San Francisco
+ *         username: johndoe
+ *         password: pwdtmp2024
+ *         firstName: John
+ *         lastName: Doe
+ *         bio: Software developer, Melbourne
+ *         birthdate: 2000-01-01T00:00:00.000Z
  *     LoginRequest:
  *       type: object
  *       required:
@@ -143,20 +140,20 @@ exports.getProfileByUsername = async (req, res) => {
 
 
 exports.createProfile = async (req, res) => {
-    const { username, password, firstName, lastName, birthday, email } = req.body;
-    console.log('=>', username, password, firstName, lastName, birthday, email)
+    const { email, username, password, firstName, lastName, bio, birthdate } = req.body;
+    console.log('=>', email, username, password, firstName, lastName, bio, birthdate)
     try {
         const existingProfile = await Profile.findOne({ username });
         if (existingProfile) {
             return res.status(400).json({ message: 'The user name already exists' });
         }
         const newProfile = new Profile({
+            email,
             username,
             password: md5(password),
             firstName,
             lastName,
-            birthday: new Date(birthday),
-            email
+            birthdate: new Date(birthdate)
         });
         await newProfile.save();
         res.status(201).json({ message: 'User registration succeeded', newProfile });
