@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const profileSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
     email: {
         type: String,
         unique: true,
@@ -29,7 +29,6 @@ const profileSchema = new mongoose.Schema({
     }
 });
 
-// Create the profile model
-const Profile = mongoose.model("profile", profileSchema, "profiles");
+const User = mongoose.model("User", userSchema);
 
-module.exports = Profile;
+module.exports = User;
