@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const profileController = require('./controllers/profileController');
+const userController = require('./controllers/userController');
 const channelController = require('./controllers/channelController');
 const { swaggerUi, specs } = require('./swagger');
 const cors = require('cors')
@@ -26,13 +26,13 @@ app.use(express.urlencoded({ extended: true }))
 // Swagger UI setup
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-// Profile routes
-app.get('/user/get/all', profileController.getAllProfiles);
-app.get('/user/get/:username', profileController.getProfileByUsername);
-app.post('/user/create', profileController.createProfile);
-app.post('/user/login', profileController.loginprofile)
-app.put('/user/update/:username', profileController.updateProfileByUsername);
-app.delete('/user/delete/:username', profileController.deleteProfileByUsername);
+// User routes
+app.get('/user/get/all', userController.getAllUsers);
+app.get('/user/get/:username', userController.getUserByUsername);
+app.post('/user/create', userController.createUser);
+app.post('/user/login', userController.loginUser)
+app.put('/user/update/:username', userController.updateUserByUsername);
+app.delete('/user/delete/:username', userController.deleteUserByUsername);
 
 // Channel routes
 app.get('/channel/all', channelController.getAllChannels);

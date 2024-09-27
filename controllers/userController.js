@@ -1,4 +1,4 @@
-const Profile = require('../models/profile');
+const User = require('../models/user');
 const jwt = require('jsonwebtoken')
 const md5 = require('md5')
 
@@ -8,12 +8,8 @@ const JWT_SECRET = 'your_jwt_secret';
  * @swagger
  * components:
  *   schemas:
- *     Profile:
+ *     User:
  *       type: object
- *       required:
- *         - username
- *         - email
- *         - bio
  *       example:
  *         email: johndoe@example.com
  *         username: johndoe
@@ -47,8 +43,8 @@ const JWT_SECRET = 'your_jwt_secret';
 /**
  * @swagger
  * tags:
- *   name: Profiles
- *   description: Profile management
+ *   name: Users
+ *   description: User management
  */
 
 /**
@@ -56,7 +52,7 @@ const JWT_SECRET = 'your_jwt_secret';
  * /user/get/all:
  *   get:
  *     summary: Get all profiles
- *     tags: [Profiles]
+ *     tags: [Users]
  *     responses:
  *       200:
  *         description: List of profiles
@@ -65,14 +61,14 @@ const JWT_SECRET = 'your_jwt_secret';
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Profile'
+ *                 $ref: '#/components/schemas/User'
  *       500:
  *         description: Server error
  */
-exports.getAllProfiles = async (req, res) => {
+exports.getAllUsers = async (req, res) => {
     try {
-        const profiles = await Profile.find();
-        res.json(profiles);
+        const users = await User.find();
+        res.json(users);
     } catch (err) {
         res.status(500).json({ message: 'Server error' });
     }
@@ -82,34 +78,34 @@ exports.getAllProfiles = async (req, res) => {
  * @swagger
  * /user/get/{username}:
  *   get:
- *     summary: Get profile by username
- *     tags: [Profiles]
+ *     summary: Get user by username
+ *     tags: [Users]
  *     parameters:
  *       - in: path
  *         name: username
  *         schema:
  *           type: string
  *         required: true
- *         description: Username of the profile
+ *         description: Username of the user
  *     responses:
  *       200:
- *         description: Profile data
+ *         description: User data
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Profile'
+ *               $ref: '#/components/schemas/User'
  *       404:
- *         description: Profile not found
+ *         description: User not found
  *       500:
  *         description: Server error
  */
-exports.getProfileByUsername = async (req, res) => {
+exports.getUserByUsername = async (req, res) => {
     try {
-        const profile = await Profile.findOne({ username: req.params.username });
-        if (!profile) {
-            return res.status(404).json({ message: 'Profile not found' });
+        const user = await User.findOne({ username: req.params.username });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
-        res.json(profile);
+        res.json(user);
     } catch (err) {
         res.status(500).json({ message: 'Server error' });
     }
@@ -119,35 +115,35 @@ exports.getProfileByUsername = async (req, res) => {
  * @swagger
  * /user/create:
  *   post:
- *     summary: Create a new profile
- *     tags: [Profiles]
+ *     summary: Create a new user
+ *     tags: [Users]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Profile'
+ *             $ref: '#/components/schemas/User'
  *     responses:
  *       201:
- *         description: Profile created successfully
+ *         description: User created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Profile'
+ *               $ref: '#/components/schemas/User'
  *       500:
  *         description: Server error
  */
 
 
-exports.createProfile = async (req, res) => {
+exports.createUser = async (req, res) => {
     const { email, username, password, firstName, lastName, bio, birthdate } = req.body;
     console.log('=>', email, username, password, firstName, lastName, bio, birthdate)
     try {
-        const existingProfile = await Profile.findOne({ username });
-        if (existingProfile) {
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
             return res.status(400).json({ message: 'The user name already exists' });
         }
-        const newProfile = new Profile({
+        const newUser = new User({
             email,
             username,
             password: md5(password),
@@ -155,45 +151,20 @@ exports.createProfile = async (req, res) => {
             lastName,
             birthdate: new Date(birthdate)
         });
-        await newProfile.save();
-        res.status(201).json({ message: 'User registration succeeded', newProfile });
+        await newUser.save();
+        res.status(201).json({ message: 'User registration succeeded', newUser });
     } catch (err) {
         res.status(500).json({ message: 'server error', error: err.message });
     }
 };
-
-exports.loginprofile = async (req, res) => {
-    const { username, password } = req.body;
-    console.log(username, password)
-    try {
-        const profile = await Profile.findOne({ username });
-        console.log(profile)
-        if (!profile) {
-            return res.status(404).json({ message: 'The user does not exist' });
-        }
-        const hashedPassword = md5(password);
-        console.log(hashedPassword)
-        if (hashedPassword !== profile.password) {
-            console.log('Check failure')
-            return res.status(401).json({ message: 'password error' });
-        }
-
-        const token = jwt.sign({ username: profile.username }, JWT_SECRET, { expiresIn: '1h' });
-
-        res.status(200).json({ message: 'login successfully', token });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'server error', error: err.message });
-    }
-}
 
 
 /**
  * @swagger
  * /user/login:
  *   post:
- *     summary: Login to a profile
- *     tags: [Profiles]
+ *     summary: Login to a user
+ *     tags: [Users]
  *     requestBody:
  *       required: true
  *       content:
@@ -210,27 +181,27 @@ exports.loginprofile = async (req, res) => {
  *       401:
  *         description: Invalid credentials
  *       404:
- *         description: Profile not found
+ *         description: User not found
  *       500:
  *         description: Server error
  */
-exports.loginprofile = async (req, res) => {
+exports.loginUser = async (req, res) => {
     const { username, password } = req.body;
     console.log(username, password)
     try {
-        const profile = await Profile.findOne({ username });
-        console.log(profile)
-        if (!profile) {
+        const user = await User.findOne({ username });
+        console.log(user)
+        if (!user) {
             return res.status(404).json({ message: 'The user does not exist' });
         }
         const hashedPassword = md5(password);
         console.log(hashedPassword)
-        if (hashedPassword !== profile.password) {
+        if (hashedPassword !== user.password) {
             console.log('Check failure')
             return res.status(401).json({ message: 'password error' });
         }
 
-        const token = jwt.sign({ username: profile.username }, JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: '1h' });
 
         res.status(200).json({ message: 'login successfully', token });
     } catch (err) {
@@ -243,8 +214,8 @@ exports.loginprofile = async (req, res) => {
  * @swagger
  * /user/update/{username}:
  *   put:
- *     summary: Update a profile by username
- *     tags: [Profiles]
+ *     summary: Update a user rofile by username
+ *     tags: [Users]
  *     parameters:
  *       - in: path
  *         name: username
@@ -257,45 +228,45 @@ exports.loginprofile = async (req, res) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Profile'
+ *             $ref: '#/components/schemas/User'
  *     responses:
  *       200:
- *         description: Profile updated successfully
+ *         description: User updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Profile'
+ *               $ref: '#/components/schemas/User'
  *       404:
- *         description: Profile not found
+ *         description: User not found
  *       400:
  *         description: Username already exists
  *       500:
  *         description: Server error
  */
-exports.updateProfileByUsername = async (req, res) => {
+exports.updateUserByUsername = async (req, res) => {
     try {
         const { username: oldUsername } = req.params;
         const { username, email, bio } = req.body;
 
-        let profile = await Profile.findOne({ username: oldUsername });
-        if (!profile) {
-            return res.status(404).json({ message: 'Profile not found' });
+        let user = await User.findOne({ username: oldUsername });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
 
         if (username && username !== oldUsername) {
-            const existingProfile = await Profile.findOne({ username });
-            if (existingProfile) {
+            const existingUser = await User.findOne({ username });
+            if (existingUser) {
                 return res.status(400).json({ message: 'Username already exists' });
             }
-            profile.username = username;
+            user.username = username;
         }
 
-        if (email) profile.email = email;
-        if (bio) profile.bio = bio;
+        if (email) user.email = email;
+        if (bio) user.bio = bio;
 
-        await profile.save();
+        await user.save();
 
-        res.json({ message: 'Profile updated successfully', updatedProfile: profile });
+        res.json({ message: 'User updated successfully', updatedUser: user });
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
@@ -308,7 +279,7 @@ exports.updateProfileByUsername = async (req, res) => {
  * /user/delete/{username}:
  *   delete:
  *     summary: Delete a profile by username
- *     tags: [Profiles]
+ *     tags: [Users]
  *     parameters:
  *       - in: path
  *         name: username
@@ -318,19 +289,19 @@ exports.updateProfileByUsername = async (req, res) => {
  *         description: Username of the profile
  *     responses:
  *       200:
- *         description: Profile deleted successfully
+ *         description: User deleted successfully
  *       404:
- *         description: Profile not found
+ *         description: User not found
  *       500:
  *         description: Server error
  */
-exports.deleteProfileByUsername = async (req, res) => {
+exports.deleteUserByUsername = async (req, res) => {
     try {
-        const deletedProfile = await Profile.findOneAndDelete({ username: req.params.username });
-        if (!deletedProfile) {
-            return res.status(404).json({ message: 'Profile not found' });
+        const deletedUser = await User.findOneAndDelete({ username: req.params.username });
+        if (!deletedUser) {
+            return res.status(404).json({ message: 'User not found' });
         }
-        res.json({ message: 'Profile deleted successfully', deletedProfile });
+        res.json({ message: 'User deleted successfully', deletedUser });
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
