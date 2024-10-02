@@ -1,8 +1,9 @@
-const User = require('../models/user');
-const jwt = require('jsonwebtoken')
-const md5 = require('md5')
+const User = require("../models/user");
+const UserHandle = require("../models/userHandle");
+const jwt = require("jsonwebtoken");
+const md5 = require("md5");
 
-const JWT_SECRET = 'your_jwt_secret';
+const JWT_SECRET = "your_jwt_secret";
 
 /**
  * @swagger
@@ -66,12 +67,12 @@ const JWT_SECRET = 'your_jwt_secret';
  *         description: Server error
  */
 exports.getAllUsers = async (req, res) => {
-    try {
-        const users = await User.find();
-        res.json(users);
-    } catch (err) {
-        res.status(500).json({ message: 'Server error' });
-    }
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 /**
@@ -100,15 +101,15 @@ exports.getAllUsers = async (req, res) => {
  *         description: Server error
  */
 exports.getUserByUsername = async (req, res) => {
-    try {
-        const user = await User.findOne({ username: req.params.username });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        res.json(user);
-    } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+  try {
+    const user = await User.findOne({ username: req.params.username });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 /**
@@ -134,30 +135,38 @@ exports.getUserByUsername = async (req, res) => {
  *         description: Server error
  */
 
-
 exports.createUser = async (req, res) => {
-    const { email, username, password, firstName, lastName, bio, birthdate } = req.body;
-    console.log('=>', email, username, password, firstName, lastName, bio, birthdate)
-    try {
-        const existingUser = await User.findOne({ username });
-        if (existingUser) {
-            return res.status(400).json({ message: 'The user name already exists' });
-        }
-        const newUser = new User({
-            email,
-            username,
-            password: md5(password),
-            firstName,
-            lastName,
-            birthdate: new Date(birthdate)
-        });
-        await newUser.save();
-        res.status(201).json({ message: 'User registration succeeded', newUser });
-    } catch (err) {
-        res.status(500).json({ message: 'server error', error: err.message });
+  const { email, username, password, firstName, lastName, bio, birthdate } =
+    req.body;
+  console.log(
+    "=>",
+    email,
+    username,
+    password,
+    firstName,
+    lastName,
+    bio,
+    birthdate
+  );
+  try {
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ message: "The user name already exists" });
     }
+    const newUser = new User({
+      email,
+      username,
+      password: md5(password),
+      firstName,
+      lastName,
+      birthdate: new Date(birthdate),
+    });
+    await newUser.save();
+    res.status(201).json({ message: "User registration succeeded", newUser });
+  } catch (err) {
+    res.status(500).json({ message: "server error", error: err.message });
+  }
 };
-
 
 /**
  * @swagger
@@ -186,29 +195,31 @@ exports.createUser = async (req, res) => {
  *         description: Server error
  */
 exports.loginUser = async (req, res) => {
-    const { username, password } = req.body;
-    console.log(username, password)
-    try {
-        const user = await User.findOne({ username });
-        console.log(user)
-        if (!user) {
-            return res.status(404).json({ message: 'The user does not exist' });
-        }
-        const hashedPassword = md5(password);
-        console.log(hashedPassword)
-        if (hashedPassword !== user.password) {
-            console.log('Check failure')
-            return res.status(401).json({ message: 'password error' });
-        }
-
-        const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: '1h' });
-
-        res.status(200).json({ message: 'login successfully', token });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'server error', error: err.message });
+  const { username, password } = req.body;
+  console.log(username, password);
+  try {
+    const user = await User.findOne({ username });
+    console.log(user);
+    if (!user) {
+      return res.status(404).json({ message: "The user does not exist" });
     }
-}
+    const hashedPassword = md5(password);
+    console.log(hashedPassword);
+    if (hashedPassword !== user.password) {
+      console.log("Check failure");
+      return res.status(401).json({ message: "password error" });
+    }
+
+    const token = jwt.sign({ username: user.username }, JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    res.status(200).json({ message: "login successfully", token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "server error", error: err.message });
+  }
+};
 
 /**
  * @swagger
@@ -244,35 +255,33 @@ exports.loginUser = async (req, res) => {
  *         description: Server error
  */
 exports.updateUserByUsername = async (req, res) => {
-    try {
-        const { username: oldUsername } = req.params;
-        const { username, email, bio } = req.body;
+  try {
+    const { username: oldUsername } = req.params;
+    const { username, email, bio } = req.body;
 
-        let user = await User.findOne({ username: oldUsername });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        if (username && username !== oldUsername) {
-            const existingUser = await User.findOne({ username });
-            if (existingUser) {
-                return res.status(400).json({ message: 'Username already exists' });
-            }
-            user.username = username;
-        }
-
-        if (email) user.email = email;
-        if (bio) user.bio = bio;
-
-        await user.save();
-
-        res.json({ message: 'User updated successfully', updatedUser: user });
-    } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err.message });
+    let user = await User.findOne({ username: oldUsername });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    if (username && username !== oldUsername) {
+      const existingUser = await User.findOne({ username });
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      user.username = username;
+    }
+
+    if (email) user.email = email;
+    if (bio) user.bio = bio;
+
+    await user.save();
+
+    res.json({ message: "User updated successfully", updatedUser: user });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
 };
-
-
 
 /**
  * @swagger
@@ -296,13 +305,51 @@ exports.updateUserByUsername = async (req, res) => {
  *         description: Server error
  */
 exports.deleteUserByUsername = async (req, res) => {
-    try {
-        const deletedUser = await User.findOneAndDelete({ username: req.params.username });
-        if (!deletedUser) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        res.json({ message: 'User deleted successfully', deletedUser });
-    } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err.message });
+  try {
+    const deletedUser = await User.findOneAndDelete({
+      username: req.params.username,
+    });
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found" });
     }
+    res.json({ message: "User deleted successfully", deletedUser });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+exports.getFollowing = async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username });
+
+    const all = await UserHandle.findOne({ userId: user._id });
+
+    const followingUsernames = await Promise.all(
+      all.following.map(async (followingId) => {
+        const followedUser = await User.findById(followingId);
+        return followedUser.username;
+      })
+    );
+    res.json(followingUsernames);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.getFollowers = async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username });
+
+    const all = await UserHandle.findOne({ userId: user._id });
+
+    const followerUsernames = await Promise.all(
+      all.followers.map(async (followerId) => {
+        const followingUser = await User.findById(followerId);
+        return followingUser.username;
+      })
+    );
+    res.json(followerUsernames);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
 };
