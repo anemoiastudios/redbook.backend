@@ -2,13 +2,13 @@ const express = require("express");
 const mongoose = require("mongoose");
 const userController = require("./controllers/userController");
 const channelController = require("./controllers/channelController");
+const timelinePostController = require("./controllers/timelinePostController");
 const { swaggerUi, specs } = require("./swagger");
 const cors = require("cors");
 require("dotenv").config();
 
 // Connect to DB
 mongoose
-  .connect(process.env.MONGODB_URL)
   .then(() => {
     console.log("Connected to MongoDB");
   })
@@ -39,6 +39,10 @@ app.get("/user/get/followers/:username", userController.getFollowers);
 // Channel routes
 app.get("/channel/all", channelController.getAllChannels);
 app.post("/channel/create", channelController.createChannel);
+
+app.post("/post/create", timelinePostController.createPost);
+app.get("/feed/:username", timelinePostController.getUserFeed);
+app.post("/post/read/:postId/username/:username", timelinePostController.markPostAsRead);
 
 // Start the server
 app.listen(PORT, () => {
