@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const userController = require("./controllers/userController");
 const channelController = require("./controllers/channelController");
+const chatController = require('./controllers/chatController');
 const { swaggerUi, specs } = require("./swagger");
 const cors = require("cors");
 require("dotenv").config();
@@ -39,6 +40,11 @@ app.get("/user/get/followers/:username", userController.getFollowers);
 // Channel routes
 app.get("/channel/all", channelController.getAllChannels);
 app.post("/channel/create", channelController.createChannel);
+
+// User chats route
+app.get('/user/get/chats/:username', userController.getUserChats);
+app.get('/chat/get/:chatId', chatController.getChatById);
+
 
 // Start the server
 app.listen(PORT, () => {
