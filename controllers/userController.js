@@ -322,15 +322,24 @@ exports.getFollowing = async (req, res) => {
   try {
     const user = await User.findOne({ username: req.params.username });
 
-    const all = await UserHandle.findOne({ userId: user._id });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-    const followingUsernames = await Promise.all(
-      all.following.map(async (followingId) => {
-        const followedUser = await User.findById(followingId);
-        return followedUser.username;
-      })
-    );
-    res.json(followingUsernames);
+    try {
+      const followingInfo = await UserHandle.findOne({
+        userId: user._id,
+      }).populate({
+        path: "following",
+        select: "username -_id",
+      });
+      const usernames = followingInfo.following.map(
+        (follow) => follow.username
+      );
+      res.status(200).json(usernames);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
@@ -340,15 +349,24 @@ exports.getFollowers = async (req, res) => {
   try {
     const user = await User.findOne({ username: req.params.username });
 
-    const all = await UserHandle.findOne({ userId: user._id });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-    const followerUsernames = await Promise.all(
-      all.followers.map(async (followerId) => {
-        const followingUser = await User.findById(followerId);
-        return followingUser.username;
-      })
-    );
-    res.json(followerUsernames);
+    try {
+      const followersInfo = await UserHandle.findOne({
+        userId: user._id,
+      }).populate({
+        path: "followers",
+        select: "username -_id",
+      });
+      const usernames = followersInfo.followers.map(
+        (follow) => follow.username
+      );
+      res.status(200).json(usernames);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
