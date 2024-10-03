@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const userController = require("./controllers/userController");
 const channelController = require("./controllers/channelController");
+const postController = require('../controllers/postController');
 const timelinePostController = require("./controllers/timelinePostController");
 const { swaggerUi, specs } = require("./swagger");
 const cors = require("cors");
@@ -47,6 +48,10 @@ app.post(
   "/post/read/:postId/username/:username",
   timelinePostController.markPostAsRead
 );
+
+// Post Routes
+router.post('/:id/like', postController.likePost);
+router.delete('/:id', postController.deletePost);
 
 // Start the server
 app.listen(PORT, () => {
