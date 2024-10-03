@@ -9,6 +9,7 @@ require("dotenv").config();
 
 // Connect to DB
 mongoose
+  .connect(process.env.MONGODB_URL)
   .then(() => {
     console.log("Connected to MongoDB");
   })
@@ -42,7 +43,10 @@ app.post("/channel/create", channelController.createChannel);
 
 app.post("/post/create", timelinePostController.createPost);
 app.get("/feed/:username", timelinePostController.getUserFeed);
-app.post("/post/read/:postId/username/:username", timelinePostController.markPostAsRead);
+app.post(
+  "/post/read/:postId/username/:username",
+  timelinePostController.markPostAsRead
+);
 
 // Start the server
 app.listen(PORT, () => {
