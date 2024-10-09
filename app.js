@@ -2,7 +2,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const userController = require("./controllers/userController");
 const channelController = require("./controllers/channelController");
+
 const chatController = require('./controllers/chatController');
+
+const postController = require('./controllers/postcontroller');
+const timelinePostController = require("./controllers/timelinePostController");
+
 const { swaggerUi, specs } = require("./swagger");
 const cors = require("cors");
 require("dotenv").config();
@@ -41,9 +46,22 @@ app.get("/user/get/followers/:username", userController.getFollowers);
 app.get("/channel/all", channelController.getAllChannels);
 app.post("/channel/create", channelController.createChannel);
 
+
 // User chats route
 app.get('/user/get/chats/:username', userController.getUserChats);
 app.get('/chat/get/:chatId', chatController.getChatById);
+
+
+app.post("/post/create", timelinePostController.createPost);
+app.get("/feed/:username", timelinePostController.getUserFeed);
+app.post(
+  "/post/read/:postId/username/:username",
+  timelinePostController.markPostAsRead
+);
+
+// Post Routes
+app.post('/:id/like', postController.likePost);
+app.delete('/:id', postController.deletePost);
 
 
 // Start the server
