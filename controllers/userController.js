@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const Chat = require('../models/chat');
 const UserHandle = require("../models/userHandle");
 const jwt = require("jsonwebtoken");
 const md5 = require("md5");
@@ -461,3 +462,69 @@ exports.getFollowers = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.getUserChats = async (req, res) => {
+  const { username } = req.params;
+  try {
+      const user = await User.findOne({ username });
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+      const chats = await Chat.find({ participants: user._id }); // Assuming a participant field in Chat model
+      res.json(chats);
+  } catch (err) {
+      res.status(500).json({ message: 'Server error' });
+  }
+};
+
+/**
+ * @swagger
+ * /user/get/chats/{username}:
+ *   get:
+ *     summary: Get chats for a specific user
+ *     tags: [Users]
+ *     parameters:
+ *       - name: username
+ *         in: path
+ *         required: true
+ *         description: The username of the user
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: A list of chats
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   chatId:
+ *                     type: string
+ *                     example: "60c72b2f9b1d4c001f6475c5"  # Example chat ID
+ *                   participants:
+ *                     type: array
+ *                     items:
+ *                       $ref: '#/components/schemas/User'
+ *                   messages:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         sender:
+ *                           type: string
+ *                           example: "johndoe"
+ *                         content:
+ *                           type: string
+ *                           example: "Hello, how are you?"
+ *                         timestamp:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2023-10-01T12:00:00Z"
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+
