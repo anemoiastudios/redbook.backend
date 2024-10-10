@@ -50,8 +50,8 @@ app.post(
 );
 
 // Post Routes
-app.post('/:id/like', postController.likePost);
-app.delete('/:id', postController.deletePost);
+app.post("/posts/like/:id", postController.likePost); 
+app.delete("/posts/:id", postController.deletePost);  
 
 // Start the server
 app.listen(PORT, () => {
