@@ -207,27 +207,35 @@ exports.createUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   const { username, password } = req.body;
   console.log(username, password);
+
   try {
     const user = await User.findOne({ username });
     console.log(user);
-    if (!user) {
-      return res.status(404).json({ message: "The user does not exist" });
+    if (user) {
+      const hashedPassword = md5(password);
+
+      if (hashedPassword !== user.password) {
+        console.log("Check failure");
+        res.status(401);
+        res.json({ message: "password error" });
+      }
+      else {
+        const token = jwt.sign({ username: user.username }, JWT_SECRET, {
+          expiresIn: "1h",
+        });
+        res.status(200);
+        res.json({ message: "login successfully", token });
+      }
     }
-    const hashedPassword = md5(password);
-    console.log(hashedPassword);
-    if (hashedPassword !== user.password) {
-      console.log("Check failure");
-      return res.status(401).json({ message: "password error" });
+    else {
+      res.status(404);
+      res.json({ message: "The user does not exist" });
     }
 
-    const token = jwt.sign({ username: user.username }, JWT_SECRET, {
-      expiresIn: "1h",
-    });
-
-    res.status(200).json({ message: "login successfully", token });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "server error", error: err.message });
+    res.status(500);
+    res.json({ message: "server error", error: err.message });
   }
 };
 
@@ -270,26 +278,52 @@ exports.updateUserByUsername = async (req, res) => {
     const { username, email, bio } = req.body;
 
     let user = await User.findOne({ username: oldUsername });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    console.log(user)
 
-    if (username && username !== oldUsername) {
-      const existingUser = await User.findOne({ username });
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
+    if (user) {
+      console.log(username);
+      if (username) {
+        console.log(oldUsername);
+        if (username !== oldUsername) {
+          const existingUser = await User.findOne({ username });
+          if (existingUser) {
+            res.status(400);
+            res.json({ message: "Username already exists" });
+          }
+          else {
+            console.log('Username not taken');
+            user.username = username;
+            if (email)
+              user.email = email;
+            if (bio)
+              user.bio = bio;
+
+            const updatedUser = await User.findOneAndUpdate({ username: oldUsername }, { username: username, email: email, bio: bio });
+
+            res.status(200);
+            res.json({ message: "User updated successfully", updatedUser: user });
+          }
+        }
+        else {
+          res.status(400);
+          res.json({ message: "New username can't be old username" });
+        }
       }
-      user.username = username;
+      else {
+        res.status(400);
+        res.json({ message: "New username can't be null" });
+      }
+
+    }
+    else {
+      res.status(404);
+      res.json({ message: "User not found" });
     }
 
-    if (email) user.email = email;
-    if (bio) user.bio = bio;
-
-    await user.save();
-
-    res.json({ message: "User updated successfully", updatedUser: user });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    console.log(err.message);
+    res.status(500);
+    res.json({ message: "Server error", error: err.message });
   }
 };
 
@@ -319,12 +353,18 @@ exports.deleteUserByUsername = async (req, res) => {
     const deletedUser = await User.findOneAndDelete({
       username: req.params.username,
     });
-    if (!deletedUser) {
-      return res.status(404).json({ message: "User not found" });
+
+    if (deletedUser) {
+      res.status(200);
+      res.json({ message: "User deleted successfully", deletedUser });
     }
-    res.json({ message: "User deleted successfully", deletedUser });
+    else {
+      res.status(404);
+      res.json({ message: "User not found" });
+    }
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500);
+    res.json({ message: "Server error", error: err.message });
   }
 };
 
