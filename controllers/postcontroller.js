@@ -1,9 +1,9 @@
-// controllers/postController.js
+const mongoose = require('mongoose');
 const Post = require('../models/post');
 
 /**
  * @swagger
- * /posts/{id}/like:
+ * /posts/like/{id}:
  *   post:
  *     summary: Like a post
  *     tags: [Posts]
@@ -35,7 +35,14 @@ const Post = require('../models/post');
  */
 exports.likePost = async (req, res) => {
     try {
-        const post = await Post.findById(req.params.id);
+        const postId = req.params.id;
+
+        // Validate ObjectID
+        if (!mongoose.Types.ObjectId.isValid(postId)) {
+            return res.status(400).json({ message: 'Invalid post ID' });
+        }
+
+        const post = await Post.findById(postId);
         if (!post) {
             return res.status(404).json({ message: 'Post not found' });
         }
@@ -73,6 +80,8 @@ exports.likePost = async (req, res) => {
  *                 message:
  *                   type: string
  *                   example: Post deleted successfully
+ *       400:
+ *         description: Invalid post ID
  *       404:
  *         description: Post not found
  *       500:
@@ -80,7 +89,14 @@ exports.likePost = async (req, res) => {
  */
 exports.deletePost = async (req, res) => {
     try {
-        const post = await Post.findByIdAndDelete(req.params.id);
+        const postId = req.params.id;
+
+        // Validate ObjectID
+        if (!mongoose.Types.ObjectId.isValid(postId)) {
+            return res.status(400).json({ message: 'Invalid post ID' });
+        }
+
+        const post = await Post.findByIdAndDelete(postId);
         if (!post) {
             return res.status(404).json({ message: 'Post not found' });
         }
