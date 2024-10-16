@@ -1,5 +1,5 @@
 const User = require("../models/user");
-const Chat = require('../models/chat');
+const Chat = require("../models/chat");
 const UserHandle = require("../models/userHandle");
 const jwt = require("jsonwebtoken");
 const md5 = require("md5");
@@ -319,6 +319,78 @@ exports.deleteUserByUsername = async (req, res) => {
   }
 };
 
+// This API allows a user to follow another user adding that user to its following list which in turn adds the user to the ther user's followers list
+exports.follow = async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username });
+    const newFollower = await User.findOne({ username: req.body.follow });
+
+    if (user) {
+      if (newFollower) {
+        if (newFollower._id.toString() === user._id.toString()) {
+          return res.status(400).json({ message: "Cannot follow yourself" });
+        }
+
+        try {
+          const userHandle = await UserHandle.findOne({ userId: user._id });
+
+          if (!userHandle) {
+            await UserHandle.create({
+              userId: user._id,
+              following: [newFollower._id],
+            });
+          } else {
+            if (userHandle.following.includes(newFollower._id.toString())) {
+              return res
+                .status(400)
+                .json({ message: "Already follows this user" });
+            }
+            await UserHandle.findOneAndUpdate(
+              {
+                userId: user._id,
+              },
+              {
+                $push: { following: newFollower._id },
+              }
+            );
+          }
+          const followingHandle = await UserHandle.findOne({
+            userId: newFollower._id,
+          });
+          if (!followingHandle) {
+            await UserHandle.create({
+              userId: newFollower._id,
+              followers: [user._id],
+            });
+          } else {
+            if (followingHandle.followers.includes(user._id.toString())) {
+              return res
+                .status(400)
+                .json({ message: "This user already follows you" });
+            }
+
+            await UserHandle.findOneAndUpdate(
+              {
+                userId: newFollower._id,
+              },
+              { $push: { followers: user._id } }
+            );
+          }
+          res.status(200).json({ message: "Followed user successfully" });
+        } catch (err) {
+          res.status(500).json({ message: err.message });
+        }
+      } else {
+        return res.status(404).json({ message: "Follower not found" });
+      }
+    } else {
+      return res.status(404).json({ message: "User not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 /**
  * @swagger
  * /user/get/following/{username}:
@@ -466,14 +538,14 @@ exports.getFollowers = async (req, res) => {
 exports.getUserChats = async (req, res) => {
   const { username } = req.params;
   try {
-      const user = await User.findOne({ username });
-      if (!user) {
-          return res.status(404).json({ message: 'User not found' });
-      }
-      const chats = await Chat.find({ participants: user._id }); // Assuming a participant field in Chat model
-      res.json(chats);
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const chats = await Chat.find({ participants: user._id }); // Assuming a participant field in Chat model
+    res.json(chats);
   } catch (err) {
-      res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -527,4 +599,3 @@ exports.getUserChats = async (req, res) => {
  *       500:
  *         description: Server error
  */
-
