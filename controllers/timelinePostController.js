@@ -62,7 +62,6 @@ const JWT_SECRET = 'your_jwt_secret';
  *         description: Server error
  */
 
-
 exports.createPost = async (req, res) => {
     const { username, content } = req.body;
     console.log('=> createPost ', username, content)
@@ -151,3 +150,64 @@ exports.markPostAsRead = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 }
+
+
+/**
+ * @swagger
+ * /post/{postId}/markNotified/{username}:
+ *   post:
+ *     summary: Mark a post as notified for a specific follower
+ *     tags: [TimelinePost]
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the post to mark as notified
+ *       - in: path
+ *         name: username
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The username of the follower to notify
+ *     responses:
+ *       200:
+ *         description: Post marked as notified
+ *       404:
+ *         description: Post or follower not found
+ *       500:
+ *         description: Server error
+ */
+
+exports.markPostAsNotified = async (req, res) => {
+    const { postId, username } = req.params; 
+    console.log('=> markPostAsNotified ', postId, username);
+
+    try {
+        // Find the user by username
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const userId = user._id;
+
+        const post = await TimelinePost.findOne({ _id: postId });
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        const follower = post.followers.find(f => f.userId.toString() === userId.toString());
+        if (!follower) {
+            return res.status(404).json({ message: 'Follower not found for this post' });
+        }
+
+        follower.notified = true;
+
+        await post.save();
+
+        res.status(200).json({ message: 'Post marked as notified', post });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};

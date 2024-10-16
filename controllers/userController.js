@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const Chat = require('../models/chat');
 const UserHandle = require("../models/userHandle");
 const jwt = require("jsonwebtoken");
 const md5 = require("md5");
@@ -71,7 +72,8 @@ exports.getAllUsers = async (req, res) => {
     const users = await User.find();
     res.json(users);
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500);
+    res.json({ message: "Server error" });
   }
 };
 
@@ -103,12 +105,15 @@ exports.getAllUsers = async (req, res) => {
 exports.getUserByUsername = async (req, res) => {
   try {
     const user = await User.findOne({ username: req.params.username });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404);
+      res.json({ message: "User not found" });
     }
-    res.json(user);
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500);
+    res.json({ message: "Server error" });
   }
 };
 
@@ -151,8 +156,10 @@ exports.createUser = async (req, res) => {
   try {
     const existingUser = await User.findOne({ username });
     if (existingUser) {
-      return res.status(400).json({ message: "The user name already exists" });
+      res.status(400);
+      res.json({ message: "The user name already exists" });
     }
+
     const newUser = new User({
       email,
       username,
@@ -162,9 +169,12 @@ exports.createUser = async (req, res) => {
       birthdate: new Date(birthdate),
     });
     await newUser.save();
-    res.status(201).json({ message: "User registration succeeded", newUser });
+
+    res.status(201);
+    res.json({ message: "User registration succeeded", newUser: newUser });
   } catch (err) {
-    res.status(500).json({ message: "server error", error: err.message });
+    res.status(500);
+    res.json({ message: "Server error" });
   }
 };
 
@@ -197,27 +207,35 @@ exports.createUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   const { username, password } = req.body;
   console.log(username, password);
+
   try {
     const user = await User.findOne({ username });
     console.log(user);
-    if (!user) {
-      return res.status(404).json({ message: "The user does not exist" });
+    if (user) {
+      const hashedPassword = md5(password);
+
+      if (hashedPassword !== user.password) {
+        console.log("Check failure");
+        res.status(401);
+        res.json({ message: "password error" });
+      }
+      else {
+        const token = jwt.sign({ username: user.username }, JWT_SECRET, {
+          expiresIn: "1h",
+        });
+        res.status(200);
+        res.json({ message: "login successfully", token });
+      }
     }
-    const hashedPassword = md5(password);
-    console.log(hashedPassword);
-    if (hashedPassword !== user.password) {
-      console.log("Check failure");
-      return res.status(401).json({ message: "password error" });
+    else {
+      res.status(404);
+      res.json({ message: "The user does not exist" });
     }
 
-    const token = jwt.sign({ username: user.username }, JWT_SECRET, {
-      expiresIn: "1h",
-    });
-
-    res.status(200).json({ message: "login successfully", token });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "server error", error: err.message });
+    res.status(500);
+    res.json({ message: "server error", error: err.message });
   }
 };
 
@@ -260,26 +278,52 @@ exports.updateUserByUsername = async (req, res) => {
     const { username, email, bio } = req.body;
 
     let user = await User.findOne({ username: oldUsername });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    console.log(user)
 
-    if (username && username !== oldUsername) {
-      const existingUser = await User.findOne({ username });
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
+    if (user) {
+      console.log(username);
+      if (username) {
+        console.log(oldUsername);
+        if (username !== oldUsername) {
+          const existingUser = await User.findOne({ username });
+          if (existingUser) {
+            res.status(400);
+            res.json({ message: "Username already exists" });
+          }
+          else {
+            console.log('Username not taken');
+            user.username = username;
+            if (email)
+              user.email = email;
+            if (bio)
+              user.bio = bio;
+
+            const updatedUser = await User.findOneAndUpdate({ username: oldUsername }, { username: username, email: email, bio: bio });
+
+            res.status(200);
+            res.json({ message: "User updated successfully", updatedUser: user });
+          }
+        }
+        else {
+          res.status(400);
+          res.json({ message: "New username can't be old username" });
+        }
       }
-      user.username = username;
+      else {
+        res.status(400);
+        res.json({ message: "New username can't be null" });
+      }
+
+    }
+    else {
+      res.status(404);
+      res.json({ message: "User not found" });
     }
 
-    if (email) user.email = email;
-    if (bio) user.bio = bio;
-
-    await user.save();
-
-    res.json({ message: "User updated successfully", updatedUser: user });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    console.log(err.message);
+    res.status(500);
+    res.json({ message: "Server error", error: err.message });
   }
 };
 
@@ -309,12 +353,18 @@ exports.deleteUserByUsername = async (req, res) => {
     const deletedUser = await User.findOneAndDelete({
       username: req.params.username,
     });
-    if (!deletedUser) {
-      return res.status(404).json({ message: "User not found" });
+
+    if (deletedUser) {
+      res.status(200);
+      res.json({ message: "User deleted successfully", deletedUser });
     }
-    res.json({ message: "User deleted successfully", deletedUser });
+    else {
+      res.status(404);
+      res.json({ message: "User not found" });
+    }
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500);
+    res.json({ message: "Server error", error: err.message });
   }
 };
 
@@ -461,3 +511,69 @@ exports.getFollowers = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.getUserChats = async (req, res) => {
+  const { username } = req.params;
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const chats = await Chat.find({ participants: user._id }); // Assuming a participant field in Chat model
+    res.json(chats);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+/**
+ * @swagger
+ * /user/get/chats/{username}:
+ *   get:
+ *     summary: Get chats for a specific user
+ *     tags: [Users]
+ *     parameters:
+ *       - name: username
+ *         in: path
+ *         required: true
+ *         description: The username of the user
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: A list of chats
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   chatId:
+ *                     type: string
+ *                     example: "60c72b2f9b1d4c001f6475c5"  # Example chat ID
+ *                   participants:
+ *                     type: array
+ *                     items:
+ *                       $ref: '#/components/schemas/User'
+ *                   messages:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         sender:
+ *                           type: string
+ *                           example: "johndoe"
+ *                         content:
+ *                           type: string
+ *                           example: "Hello, how are you?"
+ *                         timestamp:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2023-10-01T12:00:00Z"
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+
