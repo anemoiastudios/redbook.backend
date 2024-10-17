@@ -319,6 +319,83 @@ exports.deleteUserByUsername = async (req, res) => {
   }
 };
 
+/**
+ * @swagger
+ * /user/follow/{username}:
+ *   post:
+ *     summary: Follow a user
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: username
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The username of the user who is trying to follow someone.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               follow:
+ *                 type: string
+ *                 description: The username of the user to follow
+ *     responses:
+ *       200:
+ *         description: User followed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Followed user successfully"
+ *       300:
+ *         description: Follow request has been sent
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Request has been sent"
+ *       400:
+ *         description: Error with the follow request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cannot follow yourself"
+ *       404:
+ *         description: User or follower not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User not found"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Server error"
+ */
+
 // This API allows a user to follow another user adding that user to its following list which in turn adds the user to the ther user's followers list
 exports.follow = async (req, res) => {
   try {
@@ -331,54 +408,60 @@ exports.follow = async (req, res) => {
           return res.status(400).json({ message: "Cannot follow yourself" });
         }
 
-        try {
-          const userHandle = await UserHandle.findOne({ userId: user._id });
+        if (newFollower.private) {
+          return res.status(300).json({ message: "Request has been sent" });
+        } else {
+          try {
+            const userHandle = await UserHandle.findOne({ userId: user._id });
 
-          if (!userHandle) {
-            await UserHandle.create({
-              userId: user._id,
-              following: [newFollower._id],
-            });
-          } else {
-            if (userHandle.following.includes(newFollower._id.toString())) {
-              return res
-                .status(400)
-                .json({ message: "Already follows this user" });
-            }
-            await UserHandle.findOneAndUpdate(
-              {
+            if (!userHandle) {
+              await UserHandle.create({
                 userId: user._id,
-              },
-              {
-                $push: { following: newFollower._id },
+                following: [newFollower._id],
+              });
+            } else {
+              if (userHandle.following.includes(newFollower._id.toString())) {
+                return res
+                  .status(400)
+                  .json({ message: "Already follows this user" });
               }
-            );
-          }
-          const followingHandle = await UserHandle.findOne({
-            userId: newFollower._id,
-          });
-          if (!followingHandle) {
-            await UserHandle.create({
-              userId: newFollower._id,
-              followers: [user._id],
-            });
-          } else {
-            if (followingHandle.followers.includes(user._id.toString())) {
-              return res
-                .status(400)
-                .json({ message: "This user already follows you" });
+              await UserHandle.findOneAndUpdate(
+                {
+                  userId: user._id,
+                },
+                {
+                  $push: { following: newFollower._id },
+                }
+              );
             }
-
-            await UserHandle.findOneAndUpdate(
-              {
+            const followingHandle = await UserHandle.findOne({
+              userId: newFollower._id,
+            });
+            if (!followingHandle) {
+              await UserHandle.create({
                 userId: newFollower._id,
-              },
-              { $push: { followers: user._id } }
-            );
+                followers: [user._id],
+              });
+            } else {
+              if (followingHandle.followers.includes(user._id.toString())) {
+                return res
+                  .status(400)
+                  .json({ message: "This user already follows you" });
+              }
+
+              await UserHandle.findOneAndUpdate(
+                {
+                  userId: newFollower._id,
+                },
+                { $push: { followers: user._id } }
+              );
+            }
+            return res
+              .status(200)
+              .json({ message: "Followed user successfully" });
+          } catch (err) {
+            return res.status(500).json({ message: err.message });
           }
-          res.status(200).json({ message: "Followed user successfully" });
-        } catch (err) {
-          res.status(500).json({ message: err.message });
         }
       } else {
         return res.status(404).json({ message: "Follower not found" });
@@ -387,9 +470,16 @@ exports.follow = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
+
+// exports.acceptFollowRequest = async (req, res) => {
+//   try {
+//     const user = await User.findOne({ username: req.params.username });
+//     const newFollower = await User.findOne({ username: req.body.follow });
+
+//   }
 
 /**
  * @swagger
