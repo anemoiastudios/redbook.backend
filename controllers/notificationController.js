@@ -56,7 +56,6 @@ const Notification = require('../models/notification')
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
  *     responses:
  *       200:
  *         description: Successful retrieval of notifications
@@ -95,7 +94,6 @@ exports.getNotifications = async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
  *     responses:
  *       204:
  *         description: Notification read successfully
@@ -107,6 +105,7 @@ exports.markAsRead = async (req, res) => {
   try {
     await Notification.findByIdAndUpdate(notificationId, { read: true });
     res.status(204);
+    res.json({ message: 'Notification read successfully' })
   } catch (err) {
     res.status(500);
     res.json({ message: 'Server error' });

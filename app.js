@@ -69,7 +69,7 @@ app.delete('/:id', postController.deletePost);
 
 // Notification Routes
 app.get("/notification/get/:userId", notificationController.getNotifications);
-app.put("/notification/read/", notificationController.markAsRead);
+app.put("/notification/read/:notificationId", notificationController.markAsRead);
 app.post("/notification/create", notificationController.createNotification)
 
 
