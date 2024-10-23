@@ -2,11 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const userController = require("./controllers/userController");
 const channelController = require("./controllers/channelController");
-
 const chatController = require('./controllers/chatController');
-
 const postController = require('./controllers/postcontroller');
 const timelinePostController = require("./controllers/timelinePostController");
+const notificationController = require("./controllers/notificationController")
 
 const { swaggerUi, specs } = require("./swagger");
 const cors = require("cors");
@@ -67,6 +66,11 @@ app.post("/post/update/:postId/username/:username", timelinePostController.updat
 // Post Routes
 app.post('/:id/like', postController.likePost);
 app.delete('/:id', postController.deletePost);
+
+// Notification Routes
+app.get("/notification/get/:userId", notificationController.getNotifications);
+app.put("/notification/read/:notificationId", notificationController.markAsRead);
+app.post("/notification/create", notificationController.createNotification)
 
 
 // Start the server
