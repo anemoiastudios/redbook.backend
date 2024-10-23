@@ -72,7 +72,8 @@ exports.getAllUsers = async (req, res) => {
     const users = await User.find();
     res.json(users);
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500);
+    res.json({ message: "Server error" });
   }
 };
 
@@ -104,12 +105,15 @@ exports.getAllUsers = async (req, res) => {
 exports.getUserByUsername = async (req, res) => {
   try {
     const user = await User.findOne({ username: req.params.username });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404);
+      res.json({ message: "User not found" });
     }
-    res.json(user);
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500);
+    res.json({ message: "Server error" });
   }
 };
 
@@ -152,8 +156,10 @@ exports.createUser = async (req, res) => {
   try {
     const existingUser = await User.findOne({ username });
     if (existingUser) {
-      return res.status(400).json({ message: "The user name already exists" });
+      res.status(400);
+      res.json({ message: "The user name already exists" });
     }
+
     const newUser = new User({
       email,
       username,
@@ -163,9 +169,12 @@ exports.createUser = async (req, res) => {
       birthdate: new Date(birthdate),
     });
     await newUser.save();
-    res.status(201).json({ message: "User registration succeeded", newUser });
+
+    res.status(201);
+    res.json({ message: "User registration succeeded", newUser: newUser });
   } catch (err) {
-    res.status(500).json({ message: "server error", error: err.message });
+    res.status(500);
+    res.json({ message: "Server error" });
   }
 };
 
@@ -198,6 +207,7 @@ exports.createUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   const { username, password } = req.body;
   console.log(username, password);
+
   try {
     const user = await User.findOne({ username });
     console.log(user);
@@ -218,7 +228,8 @@ exports.loginUser = async (req, res) => {
     res.status(200).json({ message: "login successfully", token });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "server error", error: err.message });
+    res.status(500);
+    res.json({ message: "server error", error: err.message });
   }
 };
 
@@ -280,7 +291,9 @@ exports.updateUserByUsername = async (req, res) => {
 
     res.json({ message: "User updated successfully", updatedUser: user });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    console.log(err.message);
+    res.status(500);
+    res.json({ message: "Server error", error: err.message });
   }
 };
 
@@ -315,7 +328,8 @@ exports.deleteUserByUsername = async (req, res) => {
     }
     res.json({ message: "User deleted successfully", deletedUser });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500);
+    res.json({ message: "Server error", error: err.message });
   }
 };
 

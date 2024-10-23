@@ -27,6 +27,10 @@ const timelinePostSchema = new mongoose.Schema({
         hasRead: {  // Indicates whether the follower has read the post
             type: Boolean,
             default: false  // Default to false, meaning the follower hasn't read the post yet
+        },
+        notified: {  // Indicates whether the follower has been notified about the post
+            type: Boolean,
+            default: false  // Default to false, meaning the follower hasn't been notified about the post yet
         }
     }]
 });

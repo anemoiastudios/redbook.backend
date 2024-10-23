@@ -57,6 +57,11 @@ app.post(
   "/post/read/:postId/username/:username",
   timelinePostController.markPostAsRead
 );
+app.post(
+  "/post/:postId/markNotified/:username",
+  timelinePostController.markPostAsNotified
+);
+app.post("/post/update/:postId/username/:username", timelinePostController.updatePost);
 
 // Post Routes
 app.post("/:id/like", postController.likePost);
