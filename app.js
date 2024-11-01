@@ -6,7 +6,6 @@ const chatController = require('./controllers/chatController');
 const postController = require('./controllers/postcontroller');
 const timelinePostController = require("./controllers/timelinePostController");
 const notificationController = require("./controllers/notificationController")
-
 const { swaggerUi, specs } = require("./swagger");
 const cors = require("cors");
 require("dotenv").config();
@@ -38,14 +37,13 @@ app.post("/user/create", userController.createUser);
 app.post("/user/login", userController.loginUser);
 app.put("/user/update/:username", userController.updateUserByUsername);
 app.delete("/user/delete/:username", userController.deleteUserByUsername);
+app.post("/user/follow/:username", userController.follow);
 app.get("/user/get/following/:username", userController.getFollowing);
 app.get("/user/get/followers/:username", userController.getFollowers);
 
 // Channel routes
 app.get("/channel/all", channelController.getAllChannels);
 app.post("/channel/create", channelController.createChannel);
-
-//Chat routes
 app.get('/user/get/chats/:username', chatController.getUserChats);
 app.get('/chat/get/:chatId', chatController.getChatContents);
 app.post('/chat/new', chatController.createNewChat);
@@ -71,7 +69,6 @@ app.delete('/:id', postController.deletePost);
 app.get("/notification/get/:userId", notificationController.getNotifications);
 app.put("/notification/read/:notificationId", notificationController.markAsRead);
 app.post("/notification/create", notificationController.createNotification)
-
 
 // Start the server
 app.listen(PORT, () => {
