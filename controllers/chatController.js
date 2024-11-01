@@ -32,15 +32,27 @@ exports.getChatContents = async (req, res) => {
 
 exports.createNewChat = async (req, res) => {
   const { username1, username2 } = req.body;
+
   try {
     const user1 = await User.findOne({ username: username1 });
     const user2 = await User.findOne({ username: username2 });
-    if (!user1 || !user2) return res.status(404).json({ message: 'User not found' });
+    if (!user1 || !user2) {
+      return res.status(404).json({ message: 'One or both users not found' });
+    }
+    const existingChat = await Chat.findOne({
+      participants: { $all: [user1._id, user2._id] }
+    });
 
-    const chat = new Chat({ participants: [user1._id, user2._id] });
-    await chat.save();
+    if (existingChat) {
+      return res.status(409).json({ message: 'Chat already exists', chatId: existingChat._id });
+    }
+    const newChat = new Chat({
+      participants: [user1._id, user2._id]
+    });
 
-    res.status(201).json({ message: 'Chat created successfully', chat });
+    await newChat.save();
+
+    res.status(201).json({ message: 'Chat created successfully', chat: newChat });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
