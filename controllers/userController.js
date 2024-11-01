@@ -512,68 +512,69 @@ exports.getFollowers = async (req, res) => {
   }
 };
 
-exports.getUserChats = async (req, res) => {
-  const { username } = req.params;
-  try {
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    const chats = await Chat.find({ participants: user._id }); // Assuming a participant field in Chat model
-    res.json(chats);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
 /**
  * @swagger
  * /user/get/chats/{username}:
  *   get:
- *     summary: Get chats for a specific user
- *     tags: [Users]
+ *     summary: Get active chat windows for a user
+ *     tags: [Chat]
  *     parameters:
- *       - name: username
- *         in: path
- *         required: true
- *         description: The username of the user
+ *       - in: path
+ *         name: username
  *         schema:
  *           type: string
+ *         required: true
+ *         description: The username of the user
  *     responses:
  *       200:
- *         description: A list of chats
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   chatId:
- *                     type: string
- *                     example: "60c72b2f9b1d4c001f6475c5"  # Example chat ID
- *                   participants:
- *                     type: array
- *                     items:
- *                       $ref: '#/components/schemas/User'
- *                   messages:
- *                     type: array
- *                     items:
- *                       type: object
- *                       properties:
- *                         sender:
- *                           type: string
- *                           example: "johndoe"
- *                         content:
- *                           type: string
- *                           example: "Hello, how are you?"
- *                         timestamp:
- *                           type: string
- *                           format: date-time
- *                           example: "2023-10-01T12:00:00Z"
+ *         description: List of active chats for the user
  *       404:
  *         description: User not found
- *       500:
- *         description: Server error
  */
+
+/**
+ * @swagger
+ * /chat/get/{chatId}:
+ *   get:
+ *     summary: Load the chat contents by chatId
+ *     tags: [Chat]
+ *     parameters:
+ *       - in: path
+ *         name: chatId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the chat
+ *     responses:
+ *       200:
+ *         description: The chat messages
+ *       404:
+ *         description: Chat not found
+ */
+
+/**
+ * @swagger
+ * /chat/new:
+ *   post:
+ *     summary: Create a new direct message chat
+ *     tags: [Chat]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username1:
+ *                 type: string
+ *               username2:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Chat created successfully
+ *       404:
+ *         description: User not found
+ */
+
+
 
