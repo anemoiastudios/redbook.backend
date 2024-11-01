@@ -2,12 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const userController = require("./controllers/userController");
 const channelController = require("./controllers/channelController");
-
-const chatController = require("./controllers/chatController");
-
-const postController = require("./controllers/postcontroller");
+const chatController = require('./controllers/chatController');
+const postController = require('./controllers/postcontroller');
 const timelinePostController = require("./controllers/timelinePostController");
-
+const notificationController = require("./controllers/notificationController")
 const { swaggerUi, specs } = require("./swagger");
 const cors = require("cors");
 require("dotenv").config();
@@ -46,10 +44,10 @@ app.get("/user/get/followers/:username", userController.getFollowers);
 // Channel routes
 app.get("/channel/all", channelController.getAllChannels);
 app.post("/channel/create", channelController.createChannel);
+app.get('/user/get/chats/:username', chatController.getUserChats);
+app.get('/chat/get/:chatId', chatController.getChatContents);
+app.post('/chat/new', chatController.createNewChat);
 
-// User chats route
-app.get("/user/get/chats/:username", userController.getUserChats);
-app.get("/chat/get/:chatId", chatController.getChatById);
 
 app.post("/post/create", timelinePostController.createPost);
 app.get("/feed/:username", timelinePostController.getUserFeed);
@@ -64,8 +62,13 @@ app.post(
 app.post("/post/update/:postId/username/:username", timelinePostController.updatePost);
 
 // Post Routes
-app.post("/:id/like", postController.likePost);
-app.delete("/:id", postController.deletePost);
+app.post('/:id/like', postController.likePost);
+app.delete('/:id', postController.deletePost);
+
+// Notification Routes
+app.get("/notification/get/:userId", notificationController.getNotifications);
+app.put("/notification/read/:notificationId", notificationController.markAsRead);
+app.post("/notification/create", notificationController.createNotification)
 
 // Start the server
 app.listen(PORT, () => {
