@@ -46,10 +46,10 @@ app.get("/user/get/followers/:username", userController.getFollowers);
 app.get("/channel/all", channelController.getAllChannels);
 app.post("/channel/create", channelController.createChannel);
 
-
-// User chats route
-app.get('/user/get/chats/:username', userController.getUserChats);
-app.get('/chat/get/:chatId', chatController.getChatById);
+//Chat routes
+app.get('/user/get/chats/:username', chatController.getUserChats);
+app.get('/chat/get/:chatId', chatController.getChatContents);
+app.post('/chat/new', chatController.createNewChat);
 
 
 app.post("/post/create", timelinePostController.createPost);
