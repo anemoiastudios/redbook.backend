@@ -488,13 +488,6 @@ exports.follow = async (req, res) => {
   }
 };
 
-// exports.acceptFollowRequest = async (req, res) => {
-//   try {
-//     const user = await User.findOne({ username: req.params.username });
-//     const newFollower = await User.findOne({ username: req.body.follow });
-
-//   }
-
 /**
  * @swagger
  * /user/get/following/{username}:
