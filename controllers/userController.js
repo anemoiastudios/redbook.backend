@@ -106,6 +106,7 @@ exports.getUserByUsername = async (req, res) => {
   try {
     const user = await User.findOne({ username: req.params.username });
     if (user) {
+      res.status(200);
       res.json(user);
     } else {
       res.status(404);

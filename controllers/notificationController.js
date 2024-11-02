@@ -1,4 +1,4 @@
-const Notification = require('../models/notification')
+const Notification = require('../models/notification');
 
 /**
  * @swagger
@@ -75,6 +75,7 @@ exports.getNotifications = async (req, res) => {
     res.status(200);
     res.json(notifications);
   } catch (err) {
+    console.log(err.message);
     res.status(500);
     res.json({ message: 'Server error' });
   }
@@ -103,9 +104,14 @@ exports.getNotifications = async (req, res) => {
 exports.markAsRead = async (req, res) => {
   const { notificationId } = req.params;
   try {
-    await Notification.findByIdAndUpdate(notificationId, { read: true });
-    res.status(204);
-    res.json({ message: 'Notification read successfully' })
+    const notification = await Notification.findByIdAndUpdate(notificationId, { read: true });
+    if (notification) {
+      res.status(204);
+      res.json({ message: 'Notification read successfully' })
+    }
+    else {
+      throw Error;
+    }
   } catch (err) {
     res.status(500);
     res.json({ message: 'Server error' });
@@ -160,6 +166,19 @@ exports.createNotification = async (req, res) => {
 
     if (req.io) {
       req.io.to(userId).emit('notification', notification);
+    }
+
+    const valid_types = ['mention', 'reaction', 'reply', 'follow_request']
+    var valid_type = false;
+    for (var x in valid_types) {
+      if (x == type) {
+        valid_type = true;
+        break;
+      }
+    }
+
+    if (!valid_type) {
+      throw Error;
     }
 
     res.status(201);

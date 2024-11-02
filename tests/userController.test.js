@@ -53,7 +53,7 @@ describe("userController", () => {
 			User.findOne.mockResolvedValueOnce(mockUser);
 
 			const req = { params: { username: "johndoe" } };
-			const res = { json: jest.fn() };
+			const res = { json: jest.fn(), status: jest.fn().mockReturnValue({ json: jest.fn() }) };
 
 			await UserController.getUserByUsername(req, res);
 
