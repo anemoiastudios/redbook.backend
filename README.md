@@ -9,7 +9,12 @@ npm install
 
 Start server
 ```
-npm run start
+npm start
+```
+
+Run tests
+```
+npm test
 ```
 
 Enter the URL to access Swagger UI
