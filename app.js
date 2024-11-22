@@ -70,6 +70,9 @@ app.get("/notification/get/:userId", notificationController.getNotifications);
 app.put("/notification/read/:notificationId", notificationController.markAsRead);
 app.post("/notification/create", notificationController.createNotification)
 
+// Forgot password Route
+app.post("/forgot-password", userController.requestPasswordReset);
+app.post("/reset-password/:token", userController.resetPassword);
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
