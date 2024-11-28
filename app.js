@@ -47,6 +47,7 @@ app.post("/channel/create", channelController.createChannel);
 app.get('/user/get/chats/:username', chatController.getUserChats);
 app.get('/chat/get/:chatId', chatController.getChatContents);
 app.post('/chat/new', chatController.createNewChat);
+app.post('/chat/:chatId/message', chatController.sendMessage);
 
 
 app.post("/post/create", timelinePostController.createPost);
