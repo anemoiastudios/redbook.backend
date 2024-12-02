@@ -697,3 +697,23 @@ exports.getFollowers = async (req, res) => {
  *         description: User not found
  */
 
+/**
+ * @swagger
+ * /chat/participants/get/{chatId}:
+ *   get:
+ *     summary: Load the chat participants by chatId
+ *     tags: [Chat]
+ *     parameters:
+ *       - in: path
+ *         name: chatId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the chat
+ *     responses:
+ *       200:
+ *         description: The chat participants
+ *       404:
+ *         description: Chat not found
+ */
+
