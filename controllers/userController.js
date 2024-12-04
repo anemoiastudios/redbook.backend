@@ -117,6 +117,35 @@ exports.getUserByUsername = async (req, res) => {
     res.json({ message: "Server error" });
   }
 };
+/**
+ * @swagger
+ * /user/get/username/{userId}:
+ *   get:
+ *     summary: Get user by userId
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Username
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+exports.getUsernameById = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.status(200).json(user.username);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
 
 /**
  * @swagger
