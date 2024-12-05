@@ -21,7 +21,7 @@ mongoose
   });
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 
 app.use(cors());
 app.use(express.json());
@@ -40,6 +40,7 @@ app.delete("/user/delete/:username", userController.deleteUserByUsername);
 app.post("/user/follow/:username", userController.follow);
 app.get("/user/get/following/:username", userController.getFollowing);
 app.get("/user/get/followers/:username", userController.getFollowers);
+app.get("/user/get/username/:userId", userController.getUsernameById);
 
 // Channel routes
 app.get("/channel/all", channelController.getAllChannels);
@@ -47,6 +48,7 @@ app.post("/channel/create", channelController.createChannel);
 app.get('/user/get/chats/:username', chatController.getUserChats);
 app.get('/chat/get/:chatId', chatController.getChatContents);
 app.post('/chat/new', chatController.createNewChat);
+app.get('/chat/participants/get/:chatId', chatController.getChatParticipants)
 app.post('/chat/:chatId/message', chatController.sendMessage);
 
 

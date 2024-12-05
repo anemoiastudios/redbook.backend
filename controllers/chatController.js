@@ -29,6 +29,17 @@ exports.getChatContents = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+exports.getChatParticipants = async (req, res) => {
+  const { chatId } = req.params;
+  try {
+    const chat = await Chat.findById(chatId);
+    if (!chat) return res.status(404).json({ message: 'Chat not found' });
+
+    res.status(200).json(chat.participants);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
 
 exports.createNewChat = async (req, res) => {
   const { username1, username2 } = req.body;

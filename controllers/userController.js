@@ -3,8 +3,6 @@ const Chat = require("../models/chat");
 const UserHandle = require("../models/userHandle");
 const jwt = require("jsonwebtoken");
 const md5 = require("md5");
-const crypto = require("crypto");
-const nodemailer = require("nodemailer");
 
 const JWT_SECRET = "your_jwt_secret";
 
@@ -117,6 +115,35 @@ exports.getUserByUsername = async (req, res) => {
   } catch (err) {
     res.status(500);
     res.json({ message: "Server error" });
+  }
+};
+/**
+ * @swagger
+ * /user/get/username/{userId}:
+ *   get:
+ *     summary: Get user by userId
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Username
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+exports.getUsernameById = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.status(200).json(user.username);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 
@@ -699,76 +726,23 @@ exports.getFollowers = async (req, res) => {
  *         description: User not found
  */
 
-// Request password reset API
-exports.requestPasswordReset = async (req, res) => {
-  const { email } = req.body;
+/**
+ * @swagger
+ * /chat/participants/get/{chatId}:
+ *   get:
+ *     summary: Load the chat participants by chatId
+ *     tags: [Chat]
+ *     parameters:
+ *       - in: path
+ *         name: chatId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the chat
+ *     responses:
+ *       200:
+ *         description: The chat participants
+ *       404:
+ *         description: Chat not found
+ */
 
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User with this email does not exist." });
-    }
-
-    // Generate a reset token using crypto
-    const resetToken = crypto.randomBytes(32).toString("hex");
-
-    // Save token and expiration to the user
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour - tweak for more or less
-    await user.save();
-
-    //Send reset email.
-    const transporter = nodemailer.createTransport({
-      service: "Gmail",
-      auth: {
-        user: process.env.TEST_EMAIL,//change to use .env
-        pass: process.env.TEST_EMAIL_PASS, //change to use .env
-      },
-    });
-
-    const resetURL = `http://localhost:3000/reset-password/${resetToken}`;
-    const mailOptions = {
-      to: user.email,
-      from: process.env.TEST_EMAIL, //use env email
-      subject: "Password Reset Request",
-      text: `You are receiving this because you (or someone else) have requested to reset the password for your account.\n\n
-      Please click on the following link, or paste this into your browser to complete the process:\n\n
-      ${resetURL}\n\n
-      If you did not request this, please ignore this email, and your password will remain unchanged.\n`,
-    };
-
-    await transporter.sendMail(mailOptions);
-
-    res.json({ message: "Password reset link sent to your email address." });
-  } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
-  }
-};
-
-//Valiadate reset pass api:
-exports.resetPassword = async (req, res) => {
-  const { token } = req.params;
-  const { password } = req.body;
-
-  try {
-    // Find user with valid token
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }, // Check if token has not expired
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired token." });
-    }
-
-    // Hash the new password and update the user
-    user.password = md5(password); // might want to switch to bcrypt for better security against rainbow table attacks
-    user.resetPasswordToken = undefined; // Clear reset token
-    user.resetPasswordExpires = undefined; // Clear expiration
-    await user.save();
-
-    res.json({ message: "Password has been reset successfully." });
-  } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
-  }
-};
