@@ -146,7 +146,58 @@ exports.getUsernameById = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+/**
+ * @swagger
+ * /user/update/uri:
+ *   put:
+ *     summary: Update a user profile picture by username
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: username
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Username of the profile
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *     responses:
+ *       200:
+ *         description: User uri updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+exports.updateUserURI = async (req, res) => {
+  try {
+    const { username  } = req.params;
+    const { uri } = req.body;
 
+    let user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (uri) user.uri = uri;
+
+    await user.save();
+
+    res.json({ message: "User URI updated successfully", updatedUser: user });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500);
+    res.json({ message: "Server error", error: err.message });
+  }
+}
 /**
  * @swagger
  * /user/create:
