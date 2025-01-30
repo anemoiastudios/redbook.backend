@@ -49,6 +49,7 @@ app.get('/user/get/chats/:username', chatController.getUserChats);
 app.get('/chat/get/:chatId', chatController.getChatContents);
 app.post('/chat/new', chatController.createNewChat);
 app.get('/chat/participants/get/:chatId', chatController.getChatParticipants)
+app.post('/chat/:chatId/message', chatController.sendMessage);
 
 
 app.post("/post/create", timelinePostController.createPost);
@@ -72,6 +73,9 @@ app.get("/notification/get/:userId", notificationController.getNotifications);
 app.put("/notification/read/:notificationId", notificationController.markAsRead);
 app.post("/notification/create", notificationController.createNotification)
 
+// Forgot password Route
+app.post("/forgot-password", userController.requestPasswordReset);
+app.post("/reset-password/:token", userController.resetPassword);
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
