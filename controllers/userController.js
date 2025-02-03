@@ -198,6 +198,24 @@ exports.updateUserURI = async (req, res) => {
     res.json({ message: "Server error", error: err.message });
   }
 }
+/**
+ * @swagger
+ * /user/get/uri/{userId}:
+ *   get:
+ *     summary: Get profile uri by userId
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: User profile image URI
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
 exports.getURIById = async (req, res) => {
   const { userId } = req.params;
   try {
