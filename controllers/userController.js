@@ -200,7 +200,7 @@ exports.updateUserURI = async (req, res) => {
 }
 /**
  * @swagger
- * /user/get/uri/{userId}:
+ * /user/uri/{userId}:
  *   get:
  *     summary: Get profile uri by userId
  *     tags: [Users]

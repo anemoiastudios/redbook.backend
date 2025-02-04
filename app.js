@@ -33,6 +33,8 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 // User routes
 app.get("/user/get/all", userController.getAllUsers);
 app.get("/user/get/:username", userController.getUserByUsername);
+app.get("/user/uri/:userId", userController.getURIById);
+app.put("/user/update/uri/:userId");
 app.post("/user/create", userController.createUser);
 app.post("/user/login", userController.loginUser);
 app.put("/user/update/:username", userController.updateUserByUsername);
