@@ -148,17 +148,17 @@ exports.getUsernameById = async (req, res) => {
 };
 /**
  * @swagger
- * /user/update/uri:
+ * /user/update/{userId}:
  *   put:
- *     summary: Update a user profile picture by username
+ *     summary: Update a user profile picture uri by userId
  *     tags: [Users]
  *     parameters:
  *       - in: path
- *         name: username
+ *         name: userId
  *         schema:
  *           type: string
  *         required: true
- *         description: Username of the profile
+ *         description: userId for the given profile
  *     requestBody:
  *       required: true
  *       content:
@@ -179,10 +179,10 @@ exports.getUsernameById = async (req, res) => {
  */
 exports.updateUserURI = async (req, res) => {
   try {
-    const { username  } = req.params;
+    const { userId  } = req.params;
     const { uri } = req.body;
 
-    let user = await User.findOne({ username });
+    let user = await User.findOne({ userId });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
