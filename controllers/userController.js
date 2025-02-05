@@ -148,7 +148,7 @@ exports.getUsernameById = async (req, res) => {
 };
 /**
  * @swagger
- * /user/update/{userId}:
+ * /user/update/uri/{userId}:
  *   put:
  *     summary: Update a user profile picture uri by userId
  *     tags: [Users]
@@ -178,16 +178,20 @@ exports.getUsernameById = async (req, res) => {
  *         description: Server error
  */
 exports.updateUserURI = async (req, res) => {
+  const { userId } = req.params;
+  const { uri } = req.body;
   try {
-    const { userId  } = req.params;
-    const { uri } = req.body;
+    console.log(userId);
+    
+    console.log(uri);
+    
 
-    let user = await User.findOne({ userId });
+    let user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
-    if (uri) user.uri = uri;
+    console.log(uri);
+    if (uri) user.profile_uri = uri;
 
     await user.save();
 
@@ -222,7 +226,7 @@ exports.getURIById = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    res.status(200).json(user.uri);
+    res.status(200).json(user.profile_uri);
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
