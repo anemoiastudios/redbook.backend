@@ -3,8 +3,9 @@ const Chat = require("../models/chat");
 const UserHandle = require("../models/userHandle");
 const jwt = require("jsonwebtoken");
 const md5 = require("md5");
-
 const JWT_SECRET = "your_jwt_secret";
+require("dotenv").config();
+const fs = require("fs");
 
 /**
  * @swagger
@@ -146,6 +147,7 @@ exports.getUsernameById = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
 /**
  * @swagger
  * /user/update/uri/{userId}:
@@ -191,10 +193,9 @@ exports.updateUserURI = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     console.log(uri);
+
     if (uri) user.profile_uri = uri;
-
     await user.save();
-
     res.json({ message: "User URI updated successfully", updatedUser: user });
   } catch (err) {
     console.log(err.message);
