@@ -3,8 +3,9 @@ const Chat = require("../models/chat");
 const UserHandle = require("../models/userHandle");
 const jwt = require("jsonwebtoken");
 const md5 = require("md5");
-
 const JWT_SECRET = "your_jwt_secret";
+require("dotenv").config();
+const fs = require("fs");
 
 /**
  * @swagger
@@ -147,6 +148,90 @@ exports.getUsernameById = async (req, res) => {
   }
 };
 
+/**
+ * @swagger
+ * /user/update/uri/{userId}:
+ *   put:
+ *     summary: Update a user profile picture uri by userId
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: userId for the given profile
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *     responses:
+ *       200:
+ *         description: User uri updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+exports.updateUserURI = async (req, res) => {
+  const { userId } = req.params;
+  const { uri } = req.body;
+  try {
+    console.log(userId);
+    
+    console.log(uri);
+    
+
+    let user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    console.log(uri);
+
+    if (uri) user.profile_uri = uri;
+    await user.save();
+    res.json({ message: "User URI updated successfully", updatedUser: user });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500);
+    res.json({ message: "Server error", error: err.message });
+  }
+}
+/**
+ * @swagger
+ * /user/uri/{userId}:
+ *   get:
+ *     summary: Get profile uri by userId
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: User profile image URI
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+exports.getURIById = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.status(200).json(user.profile_uri);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
 /**
  * @swagger
  * /user/create:

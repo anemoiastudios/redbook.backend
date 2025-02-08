@@ -33,6 +33,8 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 // User routes
 app.get("/user/get/all", userController.getAllUsers);
 app.get("/user/get/:username", userController.getUserByUsername);
+app.get("/user/uri/:userId", userController.getURIById);
+app.put("/user/update/uri/:userId", userController.updateUserURI);
 app.post("/user/create", userController.createUser);
 app.post("/user/login", userController.loginUser);
 app.put("/user/update/:username", userController.updateUserByUsername);
@@ -74,8 +76,8 @@ app.put("/notification/read/:notificationId", notificationController.markAsRead)
 app.post("/notification/create", notificationController.createNotification)
 
 // Forgot password Route
-app.post("/forgot-password", userController.requestPasswordReset);
-app.post("/reset-password/:token", userController.resetPassword);
+//app.post("/forgot-password", userController.requestPasswordReset);
+//app.post("/reset-password/:token", userController.resetPassword);
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
