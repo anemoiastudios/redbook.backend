@@ -5,7 +5,8 @@ const channelController = require("./controllers/channelController");
 const chatController = require('./controllers/chatController');
 const postController = require('./controllers/postcontroller');
 const timelinePostController = require("./controllers/timelinePostController");
-const notificationController = require("./controllers/notificationController")
+const notificationController = require("./controllers/notificationController");
+const archivesController = require("./controllers/archivesController");
 const { swaggerUi, specs } = require("./swagger");
 const cors = require("cors");
 require("dotenv").config();
@@ -23,7 +24,11 @@ mongoose
 const app = express();
 const PORT = 3000;
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], // allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'] //  headers
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -68,7 +73,11 @@ app.delete('/:id', postController.deletePost);
 // Notification Routes
 app.get("/notification/get/:userId", notificationController.getNotifications);
 app.put("/notification/read/:notificationId", notificationController.markAsRead);
-app.post("/notification/create", notificationController.createNotification)
+app.post("/notification/create", notificationController.createNotification);
+
+// Archives Routes
+app.get('/archives', archivesController.getArchives);
+
 
 // Start the server
 app.listen(PORT, () => {
