@@ -27,8 +27,17 @@ const userSchema = new mongoose.Schema({
   birthdate: {
     type: Date,
   },
+  profile_uri: {
+    type: String,
+  },
   private: {
     type: Boolean,
+  },
+  resetPasswordToken: {
+    type: String,
+  },
+  resetPasswordExpires: {
+    type: Date,
   },
 });
 

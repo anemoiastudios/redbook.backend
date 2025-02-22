@@ -22,7 +22,7 @@ mongoose
   });
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 
 app.use(cors({
   origin: '*',
@@ -38,6 +38,8 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 // User routes
 app.get("/user/get/all", userController.getAllUsers);
 app.get("/user/get/:username", userController.getUserByUsername);
+app.get("/user/uri/:userId", userController.getURIById);
+app.put("/user/update/uri/:userId", userController.updateUserURI);
 app.post("/user/create", userController.createUser);
 app.post("/user/login", userController.loginUser);
 app.put("/user/update/:username", userController.updateUserByUsername);
@@ -45,6 +47,7 @@ app.delete("/user/delete/:username", userController.deleteUserByUsername);
 app.post("/user/follow/:username", userController.follow);
 app.get("/user/get/following/:username", userController.getFollowing);
 app.get("/user/get/followers/:username", userController.getFollowers);
+app.get("/user/get/username/:userId", userController.getUsernameById);
 
 // Channel routes
 app.get("/channel/all", channelController.getAllChannels);
@@ -52,6 +55,8 @@ app.post("/channel/create", channelController.createChannel);
 app.get('/user/get/chats/:username', chatController.getUserChats);
 app.get('/chat/get/:chatId', chatController.getChatContents);
 app.post('/chat/new', chatController.createNewChat);
+app.get('/chat/participants/get/:chatId', chatController.getChatParticipants)
+app.post('/chat/:chatId/message', chatController.sendMessage);
 
 
 app.post("/post/create", timelinePostController.createPost);
@@ -79,6 +84,9 @@ app.post("/notification/create", notificationController.createNotification);
 app.get('/archives', archivesController.getArchives);
 
 
+// Forgot password Route
+//app.post("/forgot-password", userController.requestPasswordReset);
+//app.post("/reset-password/:token", userController.resetPassword);
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
