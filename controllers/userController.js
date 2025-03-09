@@ -6,6 +6,8 @@ const md5 = require("md5");
 const JWT_SECRET = "your_jwt_secret";
 require("dotenv").config();
 const fs = require("fs");
+const { S3Client, GetObjectCommand} = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 /**
  * @swagger
@@ -221,17 +223,50 @@ exports.updateUserURI = async (req, res) => {
  *       500:
  *         description: Server error
  */
+
 exports.getURIById = async (req, res) => {
   const { userId } = req.params;
+  const authenticatedUserUserId = req.params.userId;
+  const key = `profile-picture/${authenticatedUserUserId}.png`;
+  console.log(key);
   try {
+    console.log("inside try block");
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    res.status(200).json(user.profile_uri);
+    const client = new S3Client({
+      region: "us-east-1",
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      }, 
+    });
+    const input = new GetObjectCommand( { // GetObjectRequest
+      Bucket: "theredbook-development", // required
+      Key: key, // required
+    });
+    //const response = await client.send(input);
+    try {
+      const fetchedSignedUrl = await Promise.resolve(getSignedUrl(client, input, {expriesIn: 10000}));
+      res.status(200).json(fetchedSignedUrl);
+      console.log("This should be the signed Url: "+ fetchedSignedUrl);
+    } catch (error ) {
+      console.log(error);
+    }
+     
+    /*if (!response.Body) {
+      throw new Error("Response body is empty");
+    }
+    console.log(signedUrl);
+    console.log("This is the response.");
+    console.log(response);
+    console.log("This is the response.Body");
+    console.log(response.Body);
+    const base64Image = response.Body.toString("base64");*/
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-};
+  res.status(500).json({ message: 'Server error', error: err.message });
+}
+}
 /**
  * @swagger
  * /user/create:
@@ -830,4 +865,3 @@ exports.getFollowers = async (req, res) => {
  *       404:
  *         description: Chat not found
  */
-
