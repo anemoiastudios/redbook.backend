@@ -6,6 +6,7 @@ const md5 = require("md5");
 const JWT_SECRET = "your_jwt_secret";
 require("dotenv").config();
 const fs = require("fs");
+const nodemailer = require("nodemailer");
 const { S3Client, GetObjectCommand} = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
@@ -781,6 +782,102 @@ exports.getFollowers = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.sendVerificationCode = async (req, res) => {
+  try {
+      const { username, email } = req.body;
+
+      const user = await User.findOne({ username, email });
+
+      if (!user) {
+          return res.status(404).json({ message: "User not found" });
+      }
+
+      const code = Math.floor(100000 + Math.random() * 900000).toString(); // Generates a 6-digit code
+      const expiration = new Date(Date.now() + 30 * 60 * 1000); // Expires 30 minutes from now()
+
+      user.verificationCode = code;
+      user.verificationCodeExpires = expiration;
+      await user.save();
+
+      // Send verification code via email using Nodemailer
+      const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+              user: process.env.EMAIL_USER,
+              pass: process.env.EMAIL_PASS 
+          }
+      });
+
+      const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: email,
+          subject: "Your Verification Code",
+          text: `Your verification code is ${code}. It will expire in 30 minutes.`
+      };
+
+      await transporter.sendMail(mailOptions);
+
+      return res.status(200).json({ message: "Verification code sent" });
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.verifyCode = async (req, res) => {
+  try {
+      const { username, code } = req.body;
+
+      const user = await User.findOne({ username });
+
+      if (!user) {
+          return res.status(404).json({ message: "User not found" });
+      }
+
+      if (!user.verificationCode || !user.verificationCodeExpires) {
+          return res.status(400).json({ message: "No verification code issued" });
+      }
+
+      if (Date.now() > user.verificationCodeExpires) {
+          user.verificationCode = null;
+          user.verificationCodeExpires = null;
+          await user.save();
+          return res.status(400).json({ message: "Verification code expired" });
+      }
+
+      if (user.verificationCode !== code) {
+          return res.status(400).json({ message: "Invalid verification code" });
+      }
+
+      // Mark user as verified
+      user.isVerified = true;
+      user.resetPasswordToken = null; // Clear the used code
+      user.resetPasswordExpires = null;
+      await user.save();
+
+      return res.status(200).json({ message: "Verification successful" });
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Server error" });
+  }
+};
+
+const cleanupExpiredCodes = async () => {
+  try {
+      await User.updateMany(
+          { verificationCodeExpires: { $lt: new Date() } },
+          { $unset: { verificationCode: "", verificationCodeExpires: "" } }
+      );
+      console.log("Expired verification codes removed");
+  } catch (error) {
+      console.error("Error cleaning up expired verification codes", error);
+  }
+};
+
+// Run cleanup every 30 minutes to avoid filling up the database with expired codes
+setInterval(cleanupExpiredCodes, 30 * 60 * 1000);
+
 
 /**
  * @swagger
