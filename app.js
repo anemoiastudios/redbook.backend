@@ -49,8 +49,8 @@ app.get("/user/get/following/:username", userController.getFollowing);
 app.get("/user/get/followers/:username", userController.getFollowers);
 app.get("/user/get/username/:userId", userController.getUsernameById);
 //User verification Routes
-app.post("/user/send-verification", userController.sendVerificationCode);
-app.post("/user/verify-code", userController.verifyCode);
+app.post("/user/request-password-reset", userController.requestPasswordReset);
+app.post("/user/reset-password", userController.resetPassword);
 
 // Channel routes
 app.get("/channel/all", channelController.getAllChannels);

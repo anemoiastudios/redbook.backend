@@ -783,7 +783,7 @@ exports.getFollowers = async (req, res) => {
   }
 };
 
-exports.sendVerificationCode = async (req, res) => {
+exports.requestPasswordReset  = async (req, res) => {
   try {
       const { username, email } = req.body;
 
@@ -825,7 +825,7 @@ exports.sendVerificationCode = async (req, res) => {
   }
 };
 
-exports.verifyCode = async (req, res) => {
+exports.resetPassword = async (req, res) => {
   try {
       const { username, code } = req.body;
 
