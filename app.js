@@ -7,6 +7,7 @@ const postController = require('./controllers/postcontroller');
 const timelinePostController = require("./controllers/timelinePostController");
 const notificationController = require("./controllers/notificationController");
 const archivesController = require("./controllers/archivesController");
+const passwordResetController = require("./controllers/passwordResetController");
 const { swaggerUi, specs } = require("./swagger");
 const cors = require("cors");
 require("dotenv").config();
@@ -48,6 +49,9 @@ app.post("/user/follow/:username", userController.follow);
 app.get("/user/get/following/:username", userController.getFollowing);
 app.get("/user/get/followers/:username", userController.getFollowers);
 app.get("/user/get/username/:userId", userController.getUsernameById);
+//User verification Routes
+app.post("/user/request-password-reset", userController.requestPasswordReset);
+app.post("/user/reset-password", userController.resetPassword);
 
 // Channel routes
 app.get("/channel/all", channelController.getAllChannels);
@@ -85,8 +89,8 @@ app.get('/archives', archivesController.getArchives);
 
 
 // Forgot password Route
-//app.post("/forgot-password", userController.requestPasswordReset);
-//app.post("/reset-password/:token", userController.resetPassword);
+app.post("/forgot-password", passwordResetController.requestPasswordReset);
+app.post("/reset-password", passwordResetController.resetPassword);
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
