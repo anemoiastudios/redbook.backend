@@ -184,20 +184,15 @@ exports.getUsernameById = async (req, res) => {
  */
 exports.updateUserURI = async (req, res) => {
   const { userId } = req.params;
-  const { uri } = req.body;
+  console.log("Inside update user uri.");
   try {
     console.log(userId);
-    
-    console.log(uri);
-    
-
     let user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    console.log(uri);
 
-    if (uri) user.profile_uri = uri;
+    user.profile_uri = `${userId}.png`;
     await user.save();
     res.json({ message: "User URI updated successfully", updatedUser: user });
   } catch (err) {
@@ -234,6 +229,12 @@ exports.getURIById = async (req, res) => {
     console.log("inside try block");
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
+    console.log(user.profile_uri);
+    console.log(user.username);
+    if (user.profile_uri === undefined) {
+      console.log("User does not have a profile image.");
+      return res.status(404).json({ message: 'User does not have a profile picture.' });
+    }
 
     const client = new S3Client({
       region: "us-east-1",
