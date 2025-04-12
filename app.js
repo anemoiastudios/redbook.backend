@@ -65,6 +65,7 @@ app.post('/chat/:chatId/message', chatController.sendMessage);
 
 app.post("/post/create", timelinePostController.createPost);
 app.get("/feed/:username", timelinePostController.getUserFeed);
+app.get("/posts/:username", timelinePostController.getUserPosts);
 app.post(
   "/post/read/:postId/username/:username",
   timelinePostController.markPostAsRead
