@@ -3,8 +3,12 @@ const Chat = require("../models/chat");
 const UserHandle = require("../models/userHandle");
 const jwt = require("jsonwebtoken");
 const md5 = require("md5");
-
 const JWT_SECRET = "your_jwt_secret";
+require("dotenv").config();
+const fs = require("fs");
+const nodemailer = require("nodemailer");
+const { S3Client, GetObjectCommand} = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 /**
  * @swagger
@@ -117,7 +121,154 @@ exports.getUserByUsername = async (req, res) => {
     res.json({ message: "Server error" });
   }
 };
+/**
+ * @swagger
+ * /user/get/username/{userId}:
+ *   get:
+ *     summary: Get user by userId
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Username
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+exports.getUsernameById = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
+    res.status(200).json(user.username);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+/**
+ * @swagger
+ * /user/update/uri/{userId}:
+ *   put:
+ *     summary: Update a user profile picture uri by userId
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: userId for the given profile
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *     responses:
+ *       200:
+ *         description: User uri updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+exports.updateUserURI = async (req, res) => {
+  const { userId } = req.params;
+  console.log("Inside update user uri.");
+  try {
+    console.log(userId);
+    let user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.profile_uri = `${userId}.png`;
+    await user.save();
+    res.json({ message: "User URI updated successfully", updatedUser: user });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500);
+    res.json({ message: "Server error", error: err.message });
+  }
+}
+/**
+ * @swagger
+ * /user/uri/{userId}:
+ *   get:
+ *     summary: Get profile uri by userId
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: User profile image URI
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+
+exports.getURIById = async (req, res) => {
+  const { userId } = req.params;
+  const authenticatedUserUserId = req.params.userId;
+  const key = `profile-picture/${authenticatedUserUserId}.png`;
+  console.log(key);
+  try {
+    console.log("inside try block");
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    console.log(user.profile_uri);
+    console.log(user.username);
+    if (user.profile_uri === undefined) {
+      console.log("User does not have a profile image.");
+      return res.status(404).json({ message: 'User does not have a profile picture.' });
+    }
+
+    const client = new S3Client({
+      region: "us-east-1",
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      }, 
+    });
+    const input = new GetObjectCommand( { // GetObjectRequest
+      Bucket: "theredbook-development", // required
+      Key: key, // required
+    });
+    //const response = await client.send(input);
+    try {
+      const fetchedSignedUrl = await Promise.resolve(getSignedUrl(client, input, {expriesIn: 10000}));
+      res.status(200).json(fetchedSignedUrl);
+      console.log("This should be the signed Url: "+ fetchedSignedUrl);
+    } catch (error ) {
+      console.log(error);
+    }
+     
+    /*if (!response.Body) {
+      throw new Error("Response body is empty");
+    }
+    console.log(signedUrl);
+    console.log("This is the response.");
+    console.log(response);
+    console.log("This is the response.Body");
+    console.log(response.Body);
+    const base64Image = response.Body.toString("base64");*/
+  } catch (err) {
+  res.status(500).json({ message: 'Server error', error: err.message });
+}
+}
 /**
  * @swagger
  * /user/create:
@@ -633,6 +784,102 @@ exports.getFollowers = async (req, res) => {
   }
 };
 
+exports.requestPasswordReset  = async (req, res) => {
+  try {
+      const { username, email } = req.body;
+
+      const user = await User.findOne({ username, email });
+
+      if (!user) {
+          return res.status(404).json({ message: "User not found" });
+      }
+
+      const code = Math.floor(100000 + Math.random() * 900000).toString(); // Generates a 6-digit code
+      const expiration = new Date(Date.now() + 30 * 60 * 1000); // Expires 30 minutes from now()
+
+      user.verificationCode = code;
+      user.verificationCodeExpires = expiration;
+      await user.save();
+
+      // Send verification code via email using Nodemailer
+      const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+              user: process.env.EMAIL_USER,
+              pass: process.env.EMAIL_PASS 
+          }
+      });
+
+      const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: email,
+          subject: "Your Verification Code",
+          text: `Your verification code is ${code}. It will expire in 30 minutes.`
+      };
+
+      await transporter.sendMail(mailOptions);
+
+      return res.status(200).json({ message: "Verification code sent" });
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+      const { username, code } = req.body;
+
+      const user = await User.findOne({ username });
+
+      if (!user) {
+          return res.status(404).json({ message: "User not found" });
+      }
+
+      if (!user.verificationCode || !user.verificationCodeExpires) {
+          return res.status(400).json({ message: "No verification code issued" });
+      }
+
+      if (Date.now() > user.verificationCodeExpires) {
+          user.verificationCode = null;
+          user.verificationCodeExpires = null;
+          await user.save();
+          return res.status(400).json({ message: "Verification code expired" });
+      }
+
+      if (user.verificationCode !== code) {
+          return res.status(400).json({ message: "Invalid verification code" });
+      }
+
+      // Mark user as verified
+      user.isVerified = true;
+      user.resetPasswordToken = null; // Clear the used code
+      user.resetPasswordExpires = null;
+      await user.save();
+
+      return res.status(200).json({ message: "Verification successful" });
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Server error" });
+  }
+};
+
+const cleanupExpiredCodes = async () => {
+  try {
+      await User.updateMany(
+          { verificationCodeExpires: { $lt: new Date() } },
+          { $unset: { verificationCode: "", verificationCodeExpires: "" } }
+      );
+      console.log("Expired verification codes removed");
+  } catch (error) {
+      console.error("Error cleaning up expired verification codes", error);
+  }
+};
+
+// Run cleanup every 30 minutes to avoid filling up the database with expired codes
+setInterval(cleanupExpiredCodes, 30 * 60 * 1000);
+
+
 /**
  * @swagger
  * /user/get/chats/{username}:
@@ -697,3 +944,22 @@ exports.getFollowers = async (req, res) => {
  *         description: User not found
  */
 
+/**
+ * @swagger
+ * /chat/participants/get/{chatId}:
+ *   get:
+ *     summary: Load the chat participants by chatId
+ *     tags: [Chat]
+ *     parameters:
+ *       - in: path
+ *         name: chatId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the chat
+ *     responses:
+ *       200:
+ *         description: The chat participants
+ *       404:
+ *         description: Chat not found
+ */

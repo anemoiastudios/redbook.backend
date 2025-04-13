@@ -21,7 +21,7 @@ const timelinePostSchema = new mongoose.Schema({
     },
     followers: [{
         userId: {
-            type: [mongoose.Schema.Types.ObjectId],
+            type: mongoose.Schema.Types.ObjectId,
             required: true
         },
         hasRead: {  // Indicates whether the follower has read the post
